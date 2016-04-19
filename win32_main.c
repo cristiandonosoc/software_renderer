@@ -1,8 +1,3 @@
-/*---------------------------------------
-  BITBLT.C -- BitBlt Demonstration
-  (c) Charles Petzold, 1998
-  ---------------------------------------*/
-
 #include <windows.h>
 #include <stdlib.h>
 #include <malloc.h>
