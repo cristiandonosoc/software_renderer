@@ -124,17 +124,20 @@ void Line2(int x0, int y0, int x1, int y1, graphics_buffer *buffer, int color)
     float errorPerX = ABS(m);
     for (int x = x0; x <= x1; ++x)
     {
-        Sleep(pixelSleepMs);
-
-        // If the gradient if steep, we traspose the line
-        if (!steep)
+        // If within the bounds, we draw
+        if ((x >= 0) && (x < buffer->width) &&
+            (y >= 0) && (y < buffer->height))
         {
-            pixel[buffer->width * y + x] = color;
-        }
-        else
-        {
-            pixel[buffer->width * x + y] = color;
-
+            // If the gradient if steep, we traspose the line
+            if (!steep)
+            {
+                pixel[buffer->width * y + x] = color;
+            }
+            else
+            {
+                pixel[buffer->width * x + y] = color;
+            }
+            Sleep(pixelSleepMs);
         }
 
         // We correct for error
@@ -150,6 +153,8 @@ void Line2(int x0, int y0, int x1, int y1, graphics_buffer *buffer, int color)
 void CreateImage(graphics_buffer *buffer)
 {
     // COLOR IS 0xXXRRGGBB
+    Line2(-10, -10, 500, 500, buffer, 0xFFFFFF00);
+    Line2(-100, 500, 100, -40, buffer, 0xFFFFFFFF);
     Line2(400, 390, 10, 0, buffer, 0xFFFFFFFF);
     Line2(100, 380, 300, 20, buffer, 0xFF0000FF);
     Line2(0, 0, 150, 200, buffer, 0xFF00FF00);
