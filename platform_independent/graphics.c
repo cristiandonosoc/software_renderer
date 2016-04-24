@@ -1,4 +1,7 @@
 #include "macros.h"
+#include <windows.h>
+
+static int pixelSleepMs = 5;
 
 typedef struct _graphics_buffer 
 {
@@ -121,6 +124,7 @@ void Line2(int x0, int y0, int x1, int y1, graphics_buffer *buffer, int color)
     float errorPerX = ABS(m);
     for (int x = x0; x <= x1; ++x)
     {
+        Sleep(pixelSleepMs);
 
         // If the gradient if steep, we traspose the line
         if (!steep)

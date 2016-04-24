@@ -35,7 +35,7 @@ typedef struct _back_buffer
     graphics_buffer buffer;
 } back_buffer;
 static back_buffer gBuffer;
-static int gLoopRunning;
+static int gLoopRunning = 1;
 
 
 void SetupGraphicsBuffer(int width, int height, int bytesPerPixel)
@@ -127,7 +127,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
                                            &threadId);          // thread id
     
 
-    int gLoopRunning = 1;
+    gLoopRunning = 1;
     while (gLoopRunning)
     {
         MSG message;
@@ -165,13 +165,27 @@ int WINAPI WinMain(HINSTANCE hInstance,
                 DefWindowProc(handle, message.message, message.wParam, message.lParam);
             }
         }
+
+        // After we saw the image, we want to send the buffer to the window
+        Sleep(33);   // ~30 FPS
+
+        HDC context = GetDC(handle);
+
+        StretchDIBits(context,
+                0, 0, gBuffer.buffer.width, gBuffer.buffer.height,
+                0, 0, gBuffer.buffer.width, gBuffer.buffer.height,
+                gBuffer.buffer.data,
+                &gBuffer.info,
+                DIB_RGB_COLORS,
+                SRCCOPY);
+
+        ReleaseDC(handle, context);
+
     }
 
     // We finished the application,
     // we don't care for the thread any more
     TerminateThread(imageThreadHandle, 1);
-
-
     return 0;
 }
 
@@ -197,14 +211,13 @@ LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam
         case WM_DESTROY:
             {
                 gLoopRunning = 0;
+                break;              // We still need the windows processing
             }
         case WM_PAINT:
             {
 
                 PAINTSTRUCT paint;
                 HDC context = BeginPaint(handle, &paint);
-
-                /* CreateImage(&gBuffer.buffer); */
 
                 StretchDIBits(context,
                         0, 0, gBuffer.buffer.width, gBuffer.buffer.height,
