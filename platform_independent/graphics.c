@@ -1,6 +1,6 @@
 #include "macros.h"
 
-struct graphics_buffer 
+typedef struct _graphics_buffer 
 {
   int width;
   int height;
@@ -8,9 +8,9 @@ struct graphics_buffer
   int pitch;
 
   void *data;
-};
+} graphics_buffer;
 
-void ClearBuffer(struct graphics_buffer *buffer, int clearColor)
+void ClearBuffer(graphics_buffer *buffer, int clearColor)
 {
   int *pixel = (int *)buffer->data;
   for (int y = 0; y < buffer->height; ++y)
@@ -22,7 +22,7 @@ void ClearBuffer(struct graphics_buffer *buffer, int clearColor)
   }
 }
 
-void Line(int x0, int y0, int x1, int y1, struct graphics_buffer *buffer, int color)
+void Line(int x0, int y0, int x1, int y1, graphics_buffer *buffer, int color)
 {
 
   // Vertical special case
@@ -75,7 +75,7 @@ void Line(int x0, int y0, int x1, int y1, struct graphics_buffer *buffer, int co
   }
 }
 
-void Line2(int x0, int y0, int x1, int y1, struct graphics_buffer *buffer, int color)
+void Line2(int x0, int y0, int x1, int y1, graphics_buffer *buffer, int color)
 {
     // Vertical line
     if (x0 == x1)

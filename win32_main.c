@@ -1,45 +1,69 @@
 #include <windows.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <malloc.h>
+
+#include <stdio.h>
 
 #include "platform_independent/graphics.c"
 
-LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM) ;
+LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
-struct window_dimension
+typedef uint8_t uint8;
+typedef uint16_t uint16;
+typedef uint32_t uint32;
+typedef uint64_t uint64;
+
+typedef struct _window_dimension
 {
     int width;
     int height;
-};
+} window_dimension;
 
-
-struct window_dimension GetWindowDimensions(HWND handle)
+window_dimension GetWindowDimensions(HWND handle)
 {
-
     RECT clientRect;
     GetClientRect(handle, &clientRect);
-    struct window_dimension result = { clientRect.right - clientRect.left,
+    window_dimension result = { clientRect.right - clientRect.left,
         clientRect.bottom - clientRect.top };
     return result;
 }
 
-struct back_buffer
+typedef struct _back_buffer
 {
     BITMAPINFO info;
-    struct graphics_buffer buffer;
-};
-static struct back_buffer gBuffer;
+    graphics_buffer buffer;
+} back_buffer;
+static back_buffer gBuffer;
+
+
+void SetupGraphicsBuffer(int width, int height, int bytesPerPixel)
+{
+    // We create out render buffer
+    gBuffer.buffer.width = width;
+    gBuffer.buffer.height = height;
+    gBuffer.buffer.bytesPerPixel = bytesPerPixel;
+    gBuffer.buffer.pitch = bytesPerPixel * width;
+    gBuffer.buffer.data = malloc(width * height * bytesPerPixel);
+
+    // We set the BITMAP INFO HEADER
+    gBuffer.info.bmiHeader.biSize = sizeof(gBuffer.info.bmiHeader);
+    gBuffer.info.bmiHeader.biWidth = width;
+    gBuffer.info.bmiHeader.biHeight = height;
+    gBuffer.info.bmiHeader.biPlanes = 1;
+    gBuffer.info.bmiHeader.biBitCount = bytesPerPixel * 8;
+    gBuffer.info.bmiHeader.biCompression = BI_RGB;
+
+    ClearBuffer(&gBuffer.buffer, 0x00000000);
+}
 
 int WINAPI WinMain(HINSTANCE hInstance, 
         HINSTANCE hPrevInstance,
         PSTR szCmdLine, 
         int iCmdShow)
 {
-
-
     static TCHAR szAppName [] = TEXT("BitBlt") ;
-    HWND         hwnd ;
-    MSG          msg ;
+    HWND         handle;
     WNDCLASS     wndclass ;
 
     hPrevInstance = 0;
@@ -63,46 +87,71 @@ int WINAPI WinMain(HINSTANCE hInstance,
         return 0;
     }
 
-    int width = 400;
-    int height = 400;
+    int winWidth = 500;
+    int winHeight = 500;
     int bytesPerPixel = 4; // RGBA
 
-    hwnd = CreateWindowEx(0,szAppName, TEXT ("BitBlt Demo"), 
-            WS_SYSMENU,
-            CW_USEDEFAULT, CW_USEDEFAULT,    // x, y position
-            width + 50, height + 50,                   // width, height
-            NULL, NULL, hInstance, NULL) ;
+    handle = CreateWindowEx(0,szAppName, TEXT ("BitBlt Demo"), 
+                          WS_SYSMENU,
+                          CW_USEDEFAULT, CW_USEDEFAULT,         // x, y position
+                          winWidth, winHeight,                  // width, height
+                          NULL, NULL, hInstance, NULL) ;
 
-    // We create out render buffer
-    gBuffer.buffer.width = width;
-    gBuffer.buffer.height = height;
-    gBuffer.buffer.bytesPerPixel = bytesPerPixel;
-    gBuffer.buffer.pitch = bytesPerPixel * width;
-    gBuffer.buffer.data = malloc(width * height * bytesPerPixel);
+    window_dimension dim = GetWindowDimensions(handle);
 
-    // We set the BITMAP INFO HEADER
-    gBuffer.info.bmiHeader.biSize = sizeof(gBuffer.info.bmiHeader);
-    gBuffer.info.bmiHeader.biWidth = width;
-    gBuffer.info.bmiHeader.biHeight = height;
-    gBuffer.info.bmiHeader.biPlanes = 1;
-    gBuffer.info.bmiHeader.biBitCount = bytesPerPixel * 8;
-    gBuffer.info.bmiHeader.biCompression = BI_RGB;
+    char string[256];
+    sprintf_s(string, sizeof(string), "WIDTH: %d, HEIGHT: %d", dim.width, dim.height);
+    OutputDebugString(string);
 
-    ClearBuffer(&gBuffer.buffer, 0x00000000);
+    SetupGraphicsBuffer(dim.width, dim.height, bytesPerPixel);
 
+    ShowWindow(handle, iCmdShow);
+    UpdateWindow(handle);
 
-    ShowWindow(hwnd, iCmdShow);
-    UpdateWindow(hwnd);
-
-    while (GetMessage(&msg, NULL, 0, 0))
+    int runMainLoop = 1;
+    while (runMainLoop)
     {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        MSG message;
+        while(PeekMessageA(&message, 0, 0, 0, PM_REMOVE))
+        {
+            int processed = 0;
+            switch(message.message)
+            {
+                // We peak at keyboard events
+                case WM_SYSKEYDOWN:
+                case WM_SYSKEYUP:
+                case WM_KEYDOWN:
+                case WM_KEYUP:
+                {
+                    processed = 1;
+                    uint32 keyCode = (uint32)message.wParam;
+
+                    // Magic
+                    int keyWasDown = (message.lParam & (1 << 30)) ? 1 : 0;
+                    int keyIsDown = (message.lParam & (1 << 31)) ? 0 : 1;
+
+                    // We only take care of key events
+                    if (keyWasDown != keyIsDown)
+                    {
+                        if (keyCode == VK_ESCAPE)
+                        {
+                            runMainLoop = 0;
+                        }
+                    }
+                }
+            }
+
+            if (!processed) 
+            {
+                DefWindowProc(handle, message.message, message.wParam, message.lParam);
+            }
+        }
     }
-    return msg.wParam;
+
+    return 0;
 }
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
 {
     static int  cxClient, cyClient, cxSource, cySource;
     /* HDC         hdcClient, hdcWindow; */
@@ -124,9 +173,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_PAINT:
             {
 
-                //hdcWindow = GetWindowDC(hwnd);
                 PAINTSTRUCT paint;
-                HDC context = BeginPaint(hwnd, &paint);
+                HDC context = BeginPaint(handle, &paint);
 
                 // COLOR IS 0xXXRRGGBB
 
@@ -140,45 +188,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 Line2(400, 390, 10, 0, &gBuffer.buffer, 0xFFFFFFFF);
 
                 Line2(100, 380, 300, 20, &gBuffer.buffer, 0xFF0000FF);
-
-                //window_dimension dim = GetWindowDimensions(hwnd);
+                Line2(0, 0, 150, 200, &gBuffer.buffer, 0xFF00FF00);
 
                 StretchDIBits(context,
-                        10, 10, gBuffer.buffer.width, gBuffer.buffer.height,
+                        0, 0, gBuffer.buffer.width, gBuffer.buffer.height,
                         0, 0, gBuffer.buffer.width, gBuffer.buffer.height,
                         gBuffer.buffer.data,
                         &gBuffer.info,
                         DIB_RGB_COLORS,
                         SRCCOPY);
 
-                //ReleaseDC(hwnd, hdcWindow);
-                EndPaint(hwnd, &paint);
+                //ReleaseDC(handle, hdcWindow);
+                EndPaint(handle, &paint);
 
-                /* hdcClient = BeginPaint(hwnd, &ps); */
-                /* hdcWindow = GetWindowDC(hwnd); */
-
-                /* for (y = 0 ; y < cyClient ; y += cySource) */
-                /* { */
-                /*   for (x = 0 ; x < cxClient ; x += cxSource) */
-                /*   { */
-                /*     BitBlt(hdcClient, */ 
-                /*         x, y, cxSource, cySource, */
-                /*         hdcWindow, 0, 0, */ 
-                /*         SRCCOPY); */
-                /*   } */
-                /* } */
-
-                /* ReleaseDC(hwnd, hdcWindow); */
-                /* EndPaint(hwnd, &ps); */
                 return 0;
             }
         case WM_ERASEBKGND:
             // We stop erasing the background
             return 1;
-
         case WM_DESTROY:
             PostQuitMessage(0);
             return 0;
     }
-    return DefWindowProc(hwnd, message, wParam, lParam) ;
+
+    // All other cases are handled by the default procedure
+    return DefWindowProc(handle, message, wParam, lParam) ;
 }
