@@ -35,6 +35,7 @@ typedef struct _back_buffer
     graphics_buffer buffer;
 } back_buffer;
 static back_buffer gBuffer;
+static int gLoopRunning;
 
 
 void SetupGraphicsBuffer(int width, int height, int bytesPerPixel)
@@ -55,6 +56,14 @@ void SetupGraphicsBuffer(int width, int height, int bytesPerPixel)
     gBuffer.info.bmiHeader.biCompression = BI_RGB;
 
     ClearBuffer(&gBuffer.buffer, 0x00000000);
+}
+
+DWORD WINAPI ImageThreadFunction(LPVOID input)
+{
+    // We cast the input
+    graphics_buffer *buffer = (graphics_buffer *)input;
+    CreateImage(buffer);
+    return 0;
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, 
@@ -108,8 +117,18 @@ int WINAPI WinMain(HINSTANCE hInstance,
     ShowWindow(handle, iCmdShow);
     UpdateWindow(handle);
 
-    int runMainLoop = 1;
-    while (runMainLoop)
+    // We create the thread that creates the image
+    unsigned long threadId;
+    HANDLE imageThreadHandle= CreateThread(0,                   // No security measures
+                                           0,                   // default stack size
+                                           ImageThreadFunction, // function to be called
+                                           &gBuffer.buffer,     // pointer to the data
+                                           0,                   // 
+                                           &threadId);          // thread id
+    
+
+    int gLoopRunning = 1;
+    while (gLoopRunning)
     {
         MSG message;
         while(PeekMessageA(&message, 0, 0, 0, PM_REMOVE))
@@ -135,7 +154,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
                     {
                         if (keyCode == VK_ESCAPE)
                         {
-                            runMainLoop = 0;
+                            gLoopRunning = 0;
                         }
                     }
                 }
@@ -147,6 +166,11 @@ int WINAPI WinMain(HINSTANCE hInstance,
             }
         }
     }
+
+    // We finished the application,
+    // we don't care for the thread any more
+    TerminateThread(imageThreadHandle, 1);
+
 
     return 0;
 }
@@ -164,31 +188,23 @@ LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam
             cxSource = GetSystemMetrics(SM_CXSIZEFRAME) + GetSystemMetrics(SM_CXSIZE);
             cySource = GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CYCAPTION);
             return 0 ;
-
         case WM_SIZE:
             cxClient = LOWORD(lParam);
             cyClient = HIWORD(lParam);
             return 0 ;
-
+        case WM_QUIT:
+        case WM_CLOSE:
+        case WM_DESTROY:
+            {
+                gLoopRunning = 0;
+            }
         case WM_PAINT:
             {
 
                 PAINTSTRUCT paint;
                 HDC context = BeginPaint(handle, &paint);
 
-                // COLOR IS 0xXXRRGGBB
-
-                /* Line2(113, 120, 180, 140, &gBuffer.buffer, 0xFF00FF00); */ 
-                /* Line2(20, 13, 40, 80, &gBuffer.buffer, 0xFF0000FF); */ 
-                /* Line2(280, 240, 213, 220, &gBuffer.buffer, 0xFFFF0000); */
-                /* Line2(380, 320, 390, 10, &gBuffer.buffer, 0xFFFFFF00); */
-                /* Line2(40, 380, 200, 390, &gBuffer.buffer, 0xFF0000FF); */
-                /* Line2(10, 10, 390, 390, &gBuffer.buffer, 0xFFFF0000); */
-
-                Line2(400, 390, 10, 0, &gBuffer.buffer, 0xFFFFFFFF);
-
-                Line2(100, 380, 300, 20, &gBuffer.buffer, 0xFF0000FF);
-                Line2(0, 0, 150, 200, &gBuffer.buffer, 0xFF00FF00);
+                /* CreateImage(&gBuffer.buffer); */
 
                 StretchDIBits(context,
                         0, 0, gBuffer.buffer.width, gBuffer.buffer.height,
@@ -206,9 +222,6 @@ LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam
         case WM_ERASEBKGND:
             // We stop erasing the background
             return 1;
-        case WM_DESTROY:
-            PostQuitMessage(0);
-            return 0;
     }
 
     // All other cases are handled by the default procedure
