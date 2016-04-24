@@ -10,4 +10,6 @@
 
 #define ABS(a) ((a) < 0) ? -(a) : (a)
 
+#define ASSERT(expression) if(!(expression)) { volatile int *p = 0; *p = 0; }
+
 #endif

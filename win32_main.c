@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include "platform_independent/graphics.c"
+#include "platform_independent/obj_loading.c"
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -119,13 +120,15 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
     // We create the thread that creates the image
     unsigned long threadId;
-    HANDLE imageThreadHandle= CreateThread(0,                   // No security measures
-                                           0,                   // default stack size
-                                           ImageThreadFunction, // function to be called
-                                           &gBuffer.buffer,     // pointer to the data
-                                           0,                   // 
-                                           &threadId);          // thread id
+    HANDLE imageThreadHandle = CreateThread(0,                   // No security measures
+                                            0,                   // default stack size
+                                            ImageThreadFunction, // function to be called
+                                            &gBuffer.buffer,     // pointer to the data
+                                            0,                   // 
+                                            &threadId);          // thread id
     
+    // We load the model
+    LoadObj("../models/test2.obj");
 
     gLoopRunning = 1;
     while (gLoopRunning)
