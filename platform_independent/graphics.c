@@ -1,15 +1,6 @@
 #include "macros.h"
 #include "obj.c"
-
-typedef struct _graphics_buffer 
-{
-  int width;
-  int height;
-  int bytesPerPixel;
-  int pitch;
-
-  void *data;
-} graphics_buffer;
+#include "graphics.h"
 
 void ClearBuffer(graphics_buffer *buffer, int clearColor)
 {

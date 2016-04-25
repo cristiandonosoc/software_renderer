@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <windows.h>
 
 #define REMOVE_SPACES(c, stream) while((c = fgetc(stream)) == ' ') {};
 #define GET_WORD(c, stream, buffer, index, delim) REMOVE_SPACES(c, stream) \
@@ -29,12 +28,7 @@ obj_model LoadObj(char *filename)
 {
     FILE *objFile;
     int error = fopen_s(&objFile, filename, "r");
-    if (error != 0)
-    {
-        char string [256];
-        strerror_s(string, sizeof(string), errno);
-        OutputDebugString(string);
-    }
+    ASSERT (error != 0);
 
     // We allocate the vertex/faces
     vertex *vertices = (vertex *)malloc(MAX_VERTEX * sizeof(vertex));
