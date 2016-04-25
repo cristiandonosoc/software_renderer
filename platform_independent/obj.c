@@ -1,21 +1,9 @@
 #include "macros.h"
+#include "obj.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
-
-typedef struct _vertex
-{
-    double x;
-    double y;
-    double z;
-} vertex;
-
-typedef struct _face
-{
-    vertex *v1;
-    vertex *v2;
-    vertex *v3;
-} face;
 
 #define REMOVE_SPACES(c, stream) while((c = fgetc(stream)) == ' ') {};
 #define GET_WORD(c, stream, buffer, index, delim) REMOVE_SPACES(c, stream) \
@@ -31,13 +19,13 @@ typedef struct _face
                                                   buffer[index++] = '\0';
 #define SEEK_CHAR(c, stream, seekc) while((c != seekc) && (c != EOF)) { c = fgetc(stream); }
 
-// For now we have a shitload of vertex
+// For now we allocate a shitload of vertex
 #define MAX_VERTEX 10000
 static vertex vertices[MAX_VERTEX];
 #define MAX_FACES 10000
 static face faces[MAX_FACES];
 
-void LoadObj(char *filename)
+obj_model LoadObj(char *filename)
 {
     FILE *objFile;
     int error = fopen_s(&objFile, filename, "r");
@@ -48,12 +36,14 @@ void LoadObj(char *filename)
         OutputDebugString(string);
     }
 
-    char buffer[256];
-    int index = 0;
-
+    // We allocate the vertex/faces
+    vertex *vertices = (vertex *)malloc(MAX_VERTEX * sizeof(vertex));
+    face *faces = (face *)malloc(MAX_FACES * sizeof(face));
     int vertexCount = 0;
     int faceCount = 0;
 
+    char buffer[256];
+    int index = 0;
     char c = ' ';
     while (c != EOF)
     {
@@ -94,8 +84,15 @@ void LoadObj(char *filename)
         SEEK_CHAR(c, objFile, '\n');
     }
 
-
     fclose(objFile);
+
+    obj_model model;
+    model.vertices = vertices;
+    model.vertexCount = vertexCount;
+    model.faces = faces;
+    model.facesCount = faceCount;
+
+    return model;
 }
 
 

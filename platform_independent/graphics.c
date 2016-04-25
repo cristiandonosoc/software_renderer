@@ -1,7 +1,5 @@
 #include "macros.h"
-#include <windows.h>
-
-static int pixelSleepMs = 5;
+#include "obj.c"
 
 typedef struct _graphics_buffer 
 {
@@ -83,12 +81,18 @@ void Line2(int x0, int y0, int x1, int y1, graphics_buffer *buffer, int color)
     // Vertical line
     if (x0 == x1)
     {
-        int yDir = 1;
-        if (y0 > y1) { yDir = -1; }
+        int x = x0;
+        if ((x < 0) || (x >= buffer->width)) { return;}
+
+        if (y0 > y1) { SWAP(y0, y1, t1, int) }
+        if (y0 < 0) { y0 = 0; }
+        if (y1 >= buffer->height) { y1 = buffer->height - 1; }
+
         int *pixel = (int *)buffer->data;
-        for (int y = y0; y != y1; y += yDir)
+        for (int y = y0; y != y1; ++y)
         {
-          pixel[buffer->width * y + x0] = color;
+            
+            pixel[buffer->width * y + x] = color;
         }
         return;
     }
@@ -137,7 +141,6 @@ void Line2(int x0, int y0, int x1, int y1, graphics_buffer *buffer, int color)
             {
                 pixel[buffer->width * x + y] = color;
             }
-            Sleep(pixelSleepMs);
         }
 
         // We correct for error
@@ -150,12 +153,40 @@ void Line2(int x0, int y0, int x1, int y1, graphics_buffer *buffer, int color)
     }
 }
 
+void DrawVertices(vertex *v0, vertex *v1, graphics_buffer *buffer)
+{
+    int x0 = (v0->x + 1.0) * buffer->width / 2;
+    int y0 = (v0->y + 1.0) * buffer->height / 2;
+
+    int x1 = (v1->x + 1.0) * buffer->width / 2;
+    int y1 = (v1->y + 1.0) * buffer->height / 2;
+
+    Line2(x0, y0, x1, y1, buffer, 0xFFFFFFFF);
+
+}
+
+
 void CreateImage(graphics_buffer *buffer)
 {
+    obj_model model = LoadObj("../models/test2.obj");
+
+    // We draw the model
+    for (int i = 0; i < model.facesCount; ++i)
+    {
+        // We draw the vertices
+        face f = model.faces[i];
+
+        DrawVertices(f.v1, f.v2, buffer);
+        DrawVertices(f.v2, f.v3, buffer);
+        DrawVertices(f.v3, f.v1, buffer);
+    }
+
     // COLOR IS 0xXXRRGGBB
-    Line2(-10, -10, 500, 500, buffer, 0xFFFFFF00);
-    Line2(-100, 500, 100, -40, buffer, 0xFFFFFFFF);
-    Line2(400, 390, 10, 0, buffer, 0xFFFFFFFF);
-    Line2(100, 380, 300, 20, buffer, 0xFF0000FF);
-    Line2(0, 0, 150, 200, buffer, 0xFF00FF00);
+    /* Line2(0, 230, 500, 230, buffer, 0xFFFFFFFF); */
+    /* Line2(85, 0, 85, 500, buffer, 0xFFFFFFFF); */
+
+    /* Line2(-100, 500, 100, -40, buffer, 0xFF00FFFF); */
+    /* Line2(400, 390, 10, 0, buffer, 0xFFFFFFFF); */
+    /* Line2(100, 380, 300, 20, buffer, 0xFF0000FF); */
+    /* Line2(0, 0, 150, 200, buffer, 0xFF00FF00); */
 }

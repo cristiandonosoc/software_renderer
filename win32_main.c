@@ -6,7 +6,6 @@
 #include <stdio.h>
 
 #include "platform_independent/graphics.c"
-#include "platform_independent/obj_loading.c"
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -97,8 +96,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
         return 0;
     }
 
-    int winWidth = 500;
-    int winHeight = 500;
+    int winWidth = 1000;
+    int winHeight = 1000;
     int bytesPerPixel = 4; // RGBA
 
     handle = CreateWindowEx(0,szAppName, TEXT ("BitBlt Demo"), 
@@ -127,9 +126,6 @@ int WINAPI WinMain(HINSTANCE hInstance,
                                             0,                   // 
                                             &threadId);          // thread id
     
-    // We load the model
-    LoadObj("../models/test2.obj");
-
     gLoopRunning = 1;
     while (gLoopRunning)
     {
