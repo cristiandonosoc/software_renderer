@@ -24,11 +24,14 @@ static vertex vertices[MAX_VERTEX];
 #define MAX_FACES 10000
 static face faces[MAX_FACES];
 
-obj_model LoadObj(char *filename)
+int LoadObj(char *filename, obj_model *model)
 {
-    FILE *objFile;
-    int error = fopen_s(&objFile, filename, "r");
-    ASSERT (error != 0);
+    FILE *objFile = fopen(filename, "r");
+    if (objFile == 0) 
+    {
+        fprintf(stderr, "Model %s not found in file %s line %d\n", filename, __FILE__, __LINE__ - 3);
+        return 0;
+    }
 
     // We allocate the vertex/faces
     vertex *vertices = (vertex *)malloc(MAX_VERTEX * sizeof(vertex));
@@ -80,13 +83,12 @@ obj_model LoadObj(char *filename)
 
     fclose(objFile);
 
-    obj_model model;
-    model.vertices = vertices;
-    model.vertexCount = vertexCount;
-    model.faces = faces;
-    model.facesCount = faceCount;
+    model->vertices = vertices;
+    model->vertexCount = vertexCount;
+    model->faces = faces;
+    model->facesCount = faceCount;
 
-    return model;
+    return 1;
 }
 
 

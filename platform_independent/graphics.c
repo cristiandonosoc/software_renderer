@@ -159,7 +159,11 @@ void DrawVertices(vertex *v0, vertex *v1, graphics_buffer *buffer)
 
 void CreateImage(graphics_buffer *buffer)
 {
-    obj_model model = LoadObj("../models/test2.obj");
+    obj_model model;
+    if(!LoadObj("../models/test2.obj", &model))
+    {
+        return;
+    }
 
     // We draw the model
     for (int i = 0; i < model.facesCount; ++i)
