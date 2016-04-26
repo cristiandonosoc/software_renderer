@@ -66,17 +66,13 @@ DWORD WINAPI ImageThreadFunction(LPVOID input)
     return 0;
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, 
-        HINSTANCE hPrevInstance,
-        PSTR szCmdLine, 
-        int iCmdShow)
+int main()
 {
     static TCHAR szAppName [] = TEXT("BitBlt") ;
     HWND         handle;
-    WNDCLASS     wndclass ;
+    WNDCLASS     wndclass;
 
-    hPrevInstance = 0;
-    szCmdLine = 0;
+    HINSTANCE hInstance = GetModuleHandle(0);
 
     wndclass.style         = CS_HREDRAW | CS_VREDRAW;
     wndclass.lpfnWndProc   = WndProc;
@@ -108,13 +104,14 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
     window_dimension dim = GetWindowDimensions(handle);
 
-    char string[256];
-    sprintf_s(string, sizeof(string), "WIDTH: %d, HEIGHT: %d", dim.width, dim.height);
-    OutputDebugString(string);
+    /* char string[256]; */
+    /* sprintf_s(string, sizeof(string), "WIDTH: %d, HEIGHT: %d", dim.width, dim.height); */
+    /* OutputDebugString(string); */
+    printf("WIDTH: %d, HEIGHT: %d\n", dim.width, dim.height);
 
     SetupGraphicsBuffer(dim.width, dim.height, bytesPerPixel);
 
-    ShowWindow(handle, iCmdShow);
+    ShowWindow(handle, SW_SHOWNORMAL);
     UpdateWindow(handle);
 
     // We create the thread that creates the image
