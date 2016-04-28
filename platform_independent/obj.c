@@ -2,6 +2,7 @@
 #include "obj.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
 #define REMOVE_SPACES(c, stream) while((c = fgetc(stream)) == ' ') {};
