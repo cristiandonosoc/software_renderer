@@ -146,11 +146,11 @@ void Line2(int x0, int y0, int x1, int y1, graphics_buffer *buffer, int color)
 
 void DrawVertices(vertex *v0, vertex *v1, graphics_buffer *buffer)
 {
-    int x0 = (v0->x + 1.0) * buffer->width / 2;
-    int y0 = (v0->y + 1.0) * buffer->height / 2;
+    int x0 = (int)((v0->x + 1.0) * (double)buffer->width / (double)2);
+    int y0 = (int)((v0->y + 1.0) * (double)buffer->height / (double)2);
 
-    int x1 = (v1->x + 1.0) * buffer->width / 2;
-    int y1 = (v1->y + 1.0) * buffer->height / 2;
+    int x1 = (int)((v1->x + 1.0) * (double)buffer->width / (double)2);
+    int y1 = (int)((v1->y + 1.0) * (double)buffer->height / (double)2);
 
     Line2(x0, y0, x1, y1, buffer, 0xFFFFFFFF);
 

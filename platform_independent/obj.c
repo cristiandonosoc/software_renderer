@@ -62,18 +62,23 @@ int LoadObj(char *filename, obj_model *model)
         else if(strcmp(buffer, "f") == 0)
         {
             // absolutely no error checking :D
-            int index;
-            GET_WORD(c, objFile, buffer, index, '/')
-            faces[faceCount].v1 = &vertices[atoi(buffer)];
+            int temp, index;
+            GET_WORD(c, objFile, buffer, temp, '/')
+            index = atoi(buffer) - 1;
+            faces[faceCount].i1 = index;
+            faces[faceCount].v1 = &vertices[index];
             SEEK_CHAR(c, objFile, ' ')
 
-            GET_WORD(c, objFile, buffer, index, '/')
-            faces[faceCount].v2 = &vertices[atoi(buffer)];
+            GET_WORD(c, objFile, buffer, temp, '/')
+            index = atoi(buffer) - 1;
+            faces[faceCount].i2 = index;
+            faces[faceCount].v2 = &vertices[index];
             SEEK_CHAR(c, objFile, ' ')
 
-            GET_WORD(c, objFile, buffer, index, '/')
-            faces[faceCount].v3 = &vertices[atoi(buffer)];
-            SEEK_CHAR(c, objFile, ' ')
+            GET_WORD(c, objFile, buffer, temp, '/')
+            index = atoi(buffer) - 1;
+            faces[faceCount].i3 = index;
+            faces[faceCount].v3 = &vertices[index];
 
             ++faceCount;
         }

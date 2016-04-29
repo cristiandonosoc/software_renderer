@@ -9,7 +9,7 @@
 
 #define MAX(a, b) ((x) > (y)) ? (x) : (y)
 
-#define ABS(a) ((a) < 0) ? -(a) : (a)
+#define ABS(a) (((a) < 0) ? (-(a)) : (a))
 
 #define ASSERT(expression) if(!(expression)) { volatile int *p = 0; *p = 0; }
 

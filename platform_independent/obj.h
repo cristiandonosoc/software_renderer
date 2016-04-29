@@ -10,6 +10,9 @@ typedef struct _vertex
 
 typedef struct _face
 {
+    int i1;
+    int i2;
+    int i3;
     vertex *v1;
     vertex *v2;
     vertex *v3;
