@@ -9,6 +9,8 @@
 #include "platform_independent/graphics.c"
 
 static graphics_buffer gBuffer;
+// Buffer to which the information is flipped
+static graphics_buffer xBuffer;
 
 typedef struct _image_thread_holder
 {
@@ -24,6 +26,21 @@ void *ImageThreadFunction(void *input)
   return 0;
 }
 
+// Both buffers must be the same widthXheight
+void TransferBuffer(graphics_buffer *from, graphics_buffer *to)
+{
+  // We flip on y
+  int *fromPixel = (int *)(from->data);
+  int *toPixel = (int *)(to->data);
+  for (int y = 0; y < from->height; ++y)
+  {
+    for (int x = 0; x < from->width; ++x) 
+    {
+      toPixel[to->width * y + x] = fromPixel[(to->width) * (to->width - 1 - y) + x];
+    }
+  }
+}
+
 int main(int argc, char *argv[])
 {
   if (argc != 2)
@@ -37,6 +54,32 @@ int main(int argc, char *argv[])
   int winWidth = 500;
   int winHeight = 500;
   int bytesPerPixel = 4;
+  
+  // We allocate the image buffer
+  gBuffer.width = winWidth;
+  gBuffer.height = winHeight;
+  gBuffer.data = malloc(winWidth * winHeight * bytesPerPixel);
+
+  xBuffer.width = winWidth;
+  xBuffer.height = winHeight;
+  xBuffer.data = malloc(winWidth * winHeight * bytesPerPixel);
+
+  // We start the image thread
+  pthread_t thread;
+  image_thread_holder holder;
+  holder.buffer = &gBuffer;
+  holder.modelPath = modelPath;
+  int result = pthread_create(&thread, 0, ImageThreadFunction, (void *)(&holder));
+  if (result) 
+  {
+    fprintf(stderr, "Error with pthread_create. Code: %d\n", result);
+    exit(EXIT_FAILURE);
+  }
+
+
+  //
+  Display *display = XOpenDisplay(0);
+
   Window window = XCreateSimpleWindow(display, DefaultRootWindow(display),
                                       0, 0, winWidth, winHeight, 0,
                                       0xFFFFFFFF, 0);
@@ -46,20 +89,6 @@ int main(int argc, char *argv[])
   XMapWindow(display, window);
 
 
-  gBuffer.width = winWidth;
-  gBuffer.height = winHeight;
-  gBuffer.data = malloc(winWidth * winHeight * bytesPerPixel);
-  int *pixel = (int *)gBuffer.data;
-
-  // We start the thread
-  pthread_t thread;
-  int result = pthread_create(&thread, 0, ImageThreadFunction, (void *)(&gBuffer));
-  if (result) 
-  {
-    fprintf(stderr, "Error with pthread_create. Code: %d\n", result);
-    exit(EXIT_FAILURE);
-  }
-
   int screen = DefaultScreen(display);
   Visual *visual = DefaultVisual(display, screen);
   int depth = DefaultDepth(display, screen);
@@ -68,7 +97,7 @@ int main(int argc, char *argv[])
                                depth,
                                ZPixmap, 
                                0,
-                               (char *)gBuffer.data,
+                               (char *)xBuffer.data,
                                winWidth,
                                winHeight,
                                32,
@@ -81,7 +110,7 @@ int main(int argc, char *argv[])
 
 
   // Nasty hack
-  /* Atom wmDeleteMessage = XInternAtom(display, "WM_DELETE_WINDOW", False); */
+  Atom wmDeleteMessage = XInternAtom(display, "WM_DELETE_WINDOW", False);
   /* XSetWMProtocols(display, window, &wmDeleteMessage, 1); */
 
   int loopRunning = 1;
@@ -96,6 +125,7 @@ int main(int argc, char *argv[])
       switch (event.type)
       {
         case Expose:
+          TransferBuffer(&gBuffer, &xBuffer);
           XPutImage(display, window, gc, image,
                     0, 0, 0, 0,
                     winWidth, winHeight);
@@ -115,6 +145,7 @@ int main(int argc, char *argv[])
     // We sleep for a while
     usleep(100 * 1000);
 
+    TransferBuffer(&gBuffer, &xBuffer);
     XPutImage(display, window, gc, image,
               0, 0, 0, 0,
               winWidth, winHeight);
