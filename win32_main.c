@@ -37,7 +37,6 @@ typedef struct _back_buffer
 static back_buffer gBuffer;
 static int gLoopRunning = 1;
 
-
 void SetupGraphicsBuffer(int width, int height, int bytesPerPixel)
 {
     // We create out render buffer
@@ -58,16 +57,29 @@ void SetupGraphicsBuffer(int width, int height, int bytesPerPixel)
     ClearBuffer(&gBuffer.buffer, 0x00000000);
 }
 
+typedef struct _image_thread_holder
+{
+    graphics_buffer *buffer;
+    char *modelPath;
+} _image_thread_holder;
+
 DWORD WINAPI ImageThreadFunction(LPVOID input)
 {
-    // We cast the input
-    graphics_buffer *buffer = (graphics_buffer *)input;
-    CreateImage(buffer);
+    _image_thread_holder *holder = (_image_thread_holder *)input;
+    CreateImage(holder->buffer, holder->modelPath);
     return 0;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+    if (argc != 2)
+    {
+        fprintf(stderr, "Usage is: renderer <model_path>");
+        return EXIT_FAILURE;
+    }
+
+    char *modelPath = argv[1];
+
     static TCHAR szAppName [] = TEXT("BitBlt") ;
     HWND         handle;
     WNDCLASS     wndclass;
@@ -104,12 +116,11 @@ int main()
 
     window_dimension dim = GetWindowDimensions(handle);
 
-    /* char string[256]; */
-    /* sprintf_s(string, sizeof(string), "WIDTH: %d, HEIGHT: %d", dim.width, dim.height); */
-    /* OutputDebugString(string); */
-    printf("WIDTH: %d, HEIGHT: %d\n", dim.width, dim.height);
-
     SetupGraphicsBuffer(dim.width, dim.height, bytesPerPixel);
+
+    _image_thread_holder holder;
+    holder.buffer = &gBuffer.buffer;
+    holder.modelPath = modelPath;
 
     ShowWindow(handle, SW_SHOWNORMAL);
     UpdateWindow(handle);
@@ -119,7 +130,7 @@ int main()
     HANDLE imageThreadHandle = CreateThread(0,                   // No security measures
                                             0,                   // default stack size
                                             ImageThreadFunction, // function to be called
-                                            &gBuffer.buffer,     // pointer to the data
+                                            &holder,     // pointer to the data
                                             0,                   // 
                                             &threadId);          // thread id
     
