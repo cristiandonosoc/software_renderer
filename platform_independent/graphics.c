@@ -2,6 +2,8 @@
 #include "obj.c"
 #include "graphics.h"
 
+#include "utilities.c"
+
 void ClearBuffer(graphics_buffer *buffer, int clearColor)
 {
   int *pixel = (int *)buffer->data;
@@ -173,6 +175,8 @@ void CreateImage(graphics_buffer *buffer, char *modelPath)
         DrawVertices(f.v1, f.v2, buffer);
         DrawVertices(f.v2, f.v3, buffer);
         DrawVertices(f.v3, f.v1, buffer);
+
+        usleep(10 * 1000);
     }
 
     // COLOR IS 0xXXRRGGBB
