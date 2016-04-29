@@ -3,8 +3,10 @@
 #include <stdio.h>
 
 #include <malloc.h>
+#include <unistd.h>
+#include <pthread.h>
 
-#include "platform_independent/graphics.h"
+#include "platform_independent/graphics.c"
 
 static graphics_buffer gBuffer;
 
@@ -18,6 +20,13 @@ void DrawRectangle(int x0, int y0, int x1, int y1, graphics_buffer *buffer, int 
       pixel[buffer->width * y + x] = color;
     }
   }
+}
+
+void *ImageThreadFunction(void *input)
+{
+  graphics_buffer *buffer = (graphics_buffer *)input;
+  CreateImage(buffer);
+  return 0;
 }
 
 int main(int argc, char *argv[])
@@ -42,8 +51,14 @@ int main(int argc, char *argv[])
   gBuffer.data = malloc(winWidth * winHeight * bytesPerPixel);
   int *pixel = (int *)gBuffer.data;
 
-  DrawRectangle(0, 0, 50, 50, &gBuffer, 0xFFFFFF00);
-  DrawRectangle(40, 40, 130, 300, &gBuffer, 0xFF0F0FFF);
+  // We start the thread
+  pthread_t thread;
+  int result = pthread_create(&thread, 0, ImageThreadFunction, (void *)(&gBuffer));
+  if (result) 
+  {
+    fprintf(stderr, "Error with pthread_create. Code: %d\n", result);
+    exit(EXIT_FAILURE);
+  }
 
   int screen = DefaultScreen(display);
   Visual *visual = DefaultVisual(display, screen);
@@ -59,20 +74,51 @@ int main(int argc, char *argv[])
                                32,
                                0);
   XInitImage(image);
-  XSelectInput(display, window, ExposureMask);
 
-  while(1)
+
+  int xMasks = ExposureMask | KeyPressMask;
+  XSelectInput(display, window, xMasks);
+
+
+  // Nasty hack
+  /* Atom wmDeleteMessage = XInternAtom(display, "WM_DELETE_WINDOW", False); */
+  /* XSetWMProtocols(display, window, &wmDeleteMessage, 1); */
+
+  int loopRunning = 1;
+  while(loopRunning)
   {
     XEvent event;
-    XNextEvent(display, &event);
+    /* XNextEvent(display, &event); */
 
-    switch (event.type)
+    // We flush the events queue
+    while (XCheckMaskEvent(display, xMasks, &event))
     {
-      case Expose:
-        XPutImage(display, window, gc, image,
-                  0, 0, 0, 0,
-                  winWidth, winHeight);
-        XFlush(display);
+      switch (event.type)
+      {
+        case Expose:
+          XPutImage(display, window, gc, image,
+                    0, 0, 0, 0,
+                    winWidth, winHeight);
+          XFlush(display);
+          break;
+        // Hack for the window close eventExposureMask
+        // TODO(Cristian): See how to do this correctly
+        case ClientMessage:
+          if (event.xclient.data.l[0] == wmDeleteMessage)
+          {
+            loopRunning = 0;
+          }
+          break;
+      }
     }
+
+    // We sleep for a while
+    usleep(100 * 1000);
+
+    XPutImage(display, window, gc, image,
+              0, 0, 0, 0,
+              winWidth, winHeight);
+    XFlush(display);
+
   }
 }
