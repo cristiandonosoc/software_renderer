@@ -156,11 +156,10 @@ void DrawVertices(vertex *v0, vertex *v1, graphics_buffer *buffer)
 
 }
 
-
-void CreateImage(graphics_buffer *buffer)
+void CreateImage(graphics_buffer *buffer, char *modelPath)
 {
     obj_model model;
-    if(!LoadObj("../models/test2.obj", &model))
+    if(!LoadObj(modelPath, &model))
     {
         return;
     }

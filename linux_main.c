@@ -10,29 +10,29 @@
 
 static graphics_buffer gBuffer;
 
-void DrawRectangle(int x0, int y0, int x1, int y1, graphics_buffer *buffer, int color)
+typedef struct _image_thread_holder
 {
-  int *pixel = (int *)buffer->data;
-  for (int y = y0; y <= y1; ++y)
-  {
-    for (int x = x0; x <= x1; ++x)
-    {
-      pixel[buffer->width * y + x] = color;
-    }
-  }
-}
+  graphics_buffer *buffer;
+  char *modelPath;
+} image_thread_holder;
 
 void *ImageThreadFunction(void *input)
 {
+  image_thread_holder *holder = (image_thread_holder *)input;
   graphics_buffer *buffer = (graphics_buffer *)input;
-  CreateImage(buffer);
+  CreateImage(holder->buffer, holder->modelPath);
   return 0;
 }
 
 int main(int argc, char *argv[])
 {
-  Display *display = XOpenDisplay(0);
+  if (argc != 2)
+  {
+    fprintf(stderr, "Usage is: renderer <model_path>");
+    return EXIT_FAILURE;
+  }
 
+  char *modelPath = argv[1];
 
   int winWidth = 500;
   int winHeight = 500;
