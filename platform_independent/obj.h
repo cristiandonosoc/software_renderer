@@ -1,26 +1,21 @@
 #ifndef PI_OBJ_H
 #define PI_OBJ_H
 
-typedef struct _vertex
-{
-    double x;
-    double y;
-    double z;
-} vertex;
+#include "graphics.h"
 
 typedef struct _face
 {
     int i1;
     int i2;
     int i3;
-    vertex *v1;
-    vertex *v2;
-    vertex *v3;
+    vertex3d *v1;
+    vertex3d *v2;
+    vertex3d *v3;
 } face;
 
 typedef struct _obj_model
 {
-    vertex *vertices;
+    vertex3d *vertices;
     int vertexCount;
     face *faces;
     int facesCount;

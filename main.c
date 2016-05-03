@@ -1,7 +1,12 @@
+#include "platform_independent/colors.h"
+
 #include "platform_independent/graphics.c"
 #include "platform_independent/obj.c"
 #include "platform_independent/utilities.c"
 
+/**
+ * Task 1: 2D rendering of a model
+ */
 void DrawObj(graphics_buffer *buffer, char *modelPath)
 {
     obj_model model;
@@ -24,11 +29,16 @@ void DrawObj(graphics_buffer *buffer, char *modelPath)
     }
 }
 
+/**
+ * Task 2: Drawing (filled) triangles
+ */
 void Triangles(graphics_buffer *buffer)
 {
-    vec2i v0 = { 100, 100 };
-    vec2i v1 = { 100, 300 };
-    vec2i v2 = { 300, 300 };
-    DrawTriangle(v0, v1, v2, buffer, 0xFFFFFFFF);
+    vec2i t1[3] = { {10, 70}, {50, 160}, {70, 80} };
+    vec2i t2[3] = { {180, 50}, {150, 1}, {70, 180} };
+    vec2i t3[3] = { {180, 150}, {120, 160}, {130, 180} };
+    DrawTriangleSimple(t1, buffer, RED);
+    DrawTriangleSimple(t2, buffer, WHITE);
+    DrawTriangleSimple(t3, buffer, GREEN);
     return;
 }

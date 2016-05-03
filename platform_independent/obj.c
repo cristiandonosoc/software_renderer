@@ -21,9 +21,7 @@
 
 // For now we allocate a shitload of vertex
 #define MAX_VERTEX 10000
-static vertex vertices[MAX_VERTEX];
 #define MAX_FACES 10000
-static face faces[MAX_FACES];
 
 int LoadObj(char *filename, obj_model *model)
 {
@@ -35,7 +33,7 @@ int LoadObj(char *filename, obj_model *model)
     }
 
     // We allocate the vertex/faces
-    vertex *vertices = (vertex *)malloc(MAX_VERTEX * sizeof(vertex));
+    vertex3d *vertices = (vertex3d *)malloc(MAX_VERTEX * sizeof(vertex3d));
     face *faces = (face *)malloc(MAX_FACES * sizeof(face));
     int vertexCount = 0;
     int faceCount = 0;
@@ -57,6 +55,7 @@ int LoadObj(char *filename, obj_model *model)
             vertices[vertexCount].y = atof(buffer);
             GET_WORD(c, objFile, buffer, index, ' ');
             vertices[vertexCount].z = atof(buffer);
+            vertices[vertexCount].color = 0xFFFFFFFF;
             ++vertexCount;
         }
         // For now the format requires the whole f <int>/<int>/<int> ... format

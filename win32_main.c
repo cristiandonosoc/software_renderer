@@ -134,8 +134,8 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    int winWidth = 1000;
-    int winHeight = 1000;
+    int winWidth = 300;
+    int winHeight = 300;
     int bytesPerPixel = 4; // RGBA
 
     handle = CreateWindowEx(0,szAppName, TEXT ("BitBlt Demo"), 
