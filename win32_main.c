@@ -5,7 +5,12 @@
 
 #include <stdio.h>
 
-#include "platform_independent/graphics.c"
+#include "platform_independent/graphics.h"
+#include "platform_independent/utilities.c"
+
+#include "main.c"
+
+#define MAX_TASKS 2
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -60,25 +65,50 @@ void SetupGraphicsBuffer(int width, int height, int bytesPerPixel)
 typedef struct _image_thread_holder
 {
     graphics_buffer *buffer;
+    int task;
     char *modelPath;
-} _image_thread_holder;
+} image_thread_holder;
 
 DWORD WINAPI ImageThreadFunction(LPVOID input)
 {
-    _image_thread_holder *holder = (_image_thread_holder *)input;
-    CreateImage(holder->buffer, holder->modelPath);
+    image_thread_holder *holder = (image_thread_holder *)input;
+    switch (holder->task)
+    {
+        case 1:
+            DrawObj(holder->buffer, holder->modelPath);
+            break;
+        case 2:
+            Triangles(holder->buffer);
+            break;
+    }
     return 0;
 }
 
 int main(int argc, char *argv[])
 {
-    if (argc != 2)
+    int task = 0;
+    char *modelPath = "";
+    int c;
+    while((c = getopt(argc, argv, "t:m:")) != -1)
     {
-        fprintf(stderr, "Usage is: renderer <model_path>");
-        return EXIT_FAILURE;
+        switch (c)
+        {
+            case 't':
+                task = atoi(optarg);
+                break;
+            case 'm':
+                modelPath = optarg;
+                break;
+        }
     }
 
-    char *modelPath = argv[1];
+    if ((task <= 0) || (task > MAX_TASKS) || 
+        (strcmp(modelPath, "") == 0))
+    {
+        fprintf(stdout, "Usage is: renderer -m <model_path> -t <task_number>\n");
+        fprintf(stdout, "Tasks are:\n1. Draw Obj Model 2D\n2. Triangles\n");
+        return EXIT_FAILURE;
+    }
 
     static TCHAR szAppName [] = TEXT("BitBlt") ;
     HWND         handle;
@@ -118,10 +148,9 @@ int main(int argc, char *argv[])
 
     SetupGraphicsBuffer(dim.width, dim.height, bytesPerPixel);
 
-    _image_thread_holder holder;
-    holder.buffer = &gBuffer.buffer;
-    holder.modelPath = modelPath;
-
+    image_thread_holder holder = { .buffer = &gBuffer.buffer,
+                                   .task = task,
+                                   .modelPath = modelPath };
     ShowWindow(handle, SW_SHOWNORMAL);
     UpdateWindow(handle);
 
