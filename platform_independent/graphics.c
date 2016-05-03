@@ -104,6 +104,7 @@ void DrawVertices(vertex3d *v0, vertex3d *v1, graphics_buffer *buffer)
     DrawLine(x0, y0, x1, y1, buffer, 0xFFFFFFFF);
 }
 
+// TODO: Check buffer boundaries
 void DrawTriangle(vec2i v0, vec2i v1, vec2i v2, graphics_buffer *buffer, int color)
 {
     if (v1.y < v0.y) { SWAP(v0, v1, temp, vec2i) }
@@ -113,34 +114,58 @@ void DrawTriangle(vec2i v0, vec2i v1, vec2i v2, graphics_buffer *buffer, int col
     int *pixel = (int *)buffer->data;
 
     // We draw the top half of the borders
-    double v0v1Diff = (double)(v1.y - v0.y + 1);
-    double v0v2Diff = (double)(v2.y - v0.y);
     double t;
+    int v0v1 = (v1.y - v0.y);
+    double v0v1Diff = (double)(v0v1 + 1);
+    int v0v2 = (v2.y - v0.y);
+    double v0v2Diff = (double)(v0v2 + 1);
+
+    // First half of the triangle
     for (int y = v0.y; y <= v1.y; ++y)
     {
-        t = (double)(y - v0.y)/v0v2Diff;
-        int x1 = v0.x + (int)(t * (v2.x - v0.x));    
-        pixel[buffer->width * y + x1] = RED;
+        int x0 = v0.x;
+        if (v0v1 > 0)
+        {
+            t = (double)(y - v0.y)/v0v1Diff;                // v0.y == v1.y ???
+            x0 = v0.x + (int)(t * (v1.x - v0.x));     
+            pixel[buffer->width * y + x0] = color;
+        }
 
-        t = (double)(y - v0.y)/v0v1Diff;             // v0.y == v1.y ???
-        int x0 = v0.x + (int)(t * (v1.x - v0.x));     
-        pixel[buffer->width * y + x0] = GREEN;
+        int x1 = v1.x;
+        if (v0v2 > 0)
+        {
+            t = (double)(y - v0.y)/v0v2Diff;
+            x1 = v0.x + (int)(t * (v2.x - v0.x));    
+            pixel[buffer->width * y + x1] = color;
+        }
 
         // We fill the half
         if (x1 < x0) { SWAP(x0, x1, t, int) }
         for (int x = x0 + 1; x < x1; ++x)
         {
-            pixel[buffer->width * y + x] = WHITE;
+            pixel[buffer->width * y + x] = color;
         }
     }
 
+    // Second half of the triangle
+    double v1v2Diff = (double)(v2.y - v1.y);
+    for (int y = v1.y + 1; y <= v2.y; ++y)
+    {
+        t = (double)(y - v1.y)/v1v2Diff;                
+        int x1 = v1.x + (int)(t * (v2.x - v1.x));
+        pixel[buffer->width * y + x1] = color;
 
-    color = 0;
+        t = (double)(y - v0.y)/v0v2Diff;
+        int x0 = v0.x + (int)(t * (v2.x - v0.x));    
+        pixel[buffer->width * y + x0] = color;
 
-
-    /* DrawLine(v0.x, v0.y, v1.x, v1.y, buffer, GREEN); */
-    /* DrawLine(v1.x, v1.y, v2.x, v2.y, buffer, GREEN); */
-    /* DrawLine(v0.x, v0.y, v2.x, v2.y, buffer, RED); */
+        // We fill the half
+        if (x1 < x0) { SWAP(x0, x1, t, int) }
+        for (int x = x0 + 1; x < x1; ++x)
+        {
+            pixel[buffer->width * y + x] = color;
+        }
+    }
 }
 
 void DrawTriangleSimple(vec2i vertices[], graphics_buffer *buffer, int color)
