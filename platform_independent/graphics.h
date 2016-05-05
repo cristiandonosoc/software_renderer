@@ -13,6 +13,29 @@ typedef struct _graphics_buffer
   void *data;
 } graphics_buffer;
 
+
+typedef struct _box2i
+{
+    union
+    {
+        vec2i min;
+        struct 
+        {
+            int minX;
+            int minY;
+        };
+    };
+    union
+    {
+        vec2i max;
+        struct 
+        {
+            int maxX;
+            int maxY;
+        };
+    };
+} box2i;
+
 typedef struct _vertex2i
 {
     union

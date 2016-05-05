@@ -4,6 +4,8 @@
 #include "obj.h"
 #include "colors.h"
 
+#include "vectors.c"
+
 void ClearBuffer(graphics_buffer *buffer, int clearColor)
 {
   int *pixel = (int *)buffer->data;
@@ -105,7 +107,7 @@ void DrawVertices(vertex3d *v0, vertex3d *v1, graphics_buffer *buffer)
 }
 
 // TODO: Check buffer boundaries
-void DrawTriangle(vec2i v0, vec2i v1, vec2i v2, graphics_buffer *buffer, int color)
+void DrawTriangleScan(vec2i v0, vec2i v1, vec2i v2, graphics_buffer *buffer, int color)
 {
     if (v1.y < v0.y) { SWAP(v0, v1, temp, vec2i) }
     if (v2.y < v0.y) { SWAP(v0, v2, temp, vec2i) }
@@ -182,7 +184,61 @@ void DrawTriangle(vec2i v0, vec2i v1, vec2i v2, graphics_buffer *buffer, int col
     }
 }
 
-void DrawTriangleSimple(vec2i vertices[], graphics_buffer *buffer, int color)
+// Borders are INCLUSIVE
+box2i GetTriangleBoundingBox2i(vec2i vertices[3], graphics_buffer *buffer)
 {
-    DrawTriangle(vertices[0], vertices[1], vertices[2], buffer, color);
+    box2i box = { .minX = buffer->width - 1, 
+                  .minY = buffer->height - 1,
+                  .maxX = 0, 
+                  .maxY = 0 };
+
+    for(int i = 0; i < 3; ++i)
+    {
+        if (vertices[i].x < box.minX) { box.minX = vertices[i].x; }
+        if (vertices[i].x > box.maxX) { box.maxX = vertices[i].x; }
+        if (vertices[i].y < box.minY) { box.minY = vertices[i].y; }
+        if (vertices[i].y > box.maxY) { box.maxY = vertices[i].y; }
+
+    }
+    return box;
+}
+
+void DrawTriangle(vec2i vertices[3], graphics_buffer *buffer, int color)
+{
+    int *pixel = (int *)buffer->data;
+    box2i boundingBox = GetTriangleBoundingBox2i(vertices, buffer);
+    for (int y = boundingBox.minY; y <= boundingBox.maxY; ++y)
+    {
+        for (int x = boundingBox.minX; x <= boundingBox.maxX; ++x)
+        {
+            vec3i xVec = { vertices[1].x - vertices[0].x,
+                           vertices[2].x - vertices[0].x,
+                                       x - vertices[0].x };
+
+            vec3i yVec = { vertices[1].y - vertices[0].y,
+                           vertices[2].y - vertices[0].y,
+                                       y - vertices[0].y };
+
+            vec3i cross = CrossProducti(xVec, yVec);
+
+            vec3d baricentric = { -1.0,
+                                  (double)cross.x / -(double)cross.z,
+                                  (double)cross.y / -(double)cross.z };
+            baricentric.x = 1.0 - baricentric.y - baricentric.z;
+            if ((baricentric.x < 0) || (baricentric.x > 1) ||
+                (baricentric.y < 0) || (baricentric.y > 1) ||
+                (baricentric.z < 0) || (baricentric.z > 1))
+            {
+                continue;
+            }
+
+            pixel[buffer->width * y + x] = color;
+        }
+    }
+}
+
+void DrawTriangleSeparate(vec2i v0, vec2i v1, vec2i v2, graphics_buffer *buffer, int color)
+{
+    vec2i vecs[3] = { v0, v1, v2 };
+    DrawTriangle(vecs, buffer, color);
 }

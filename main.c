@@ -37,8 +37,8 @@ void Triangles(graphics_buffer *buffer)
     vec2i t1[3] = { {10, 70}, {50, 160}, {70, 80} };
     vec2i t2[3] = { {180, 50}, {150, 1}, {70, 180} };
     vec2i t3[3] = { {180, 150}, {120, 160}, {130, 180} };
-    DrawTriangleSimple(t1, buffer, RED);
-    DrawTriangleSimple(t2, buffer, WHITE);
-    DrawTriangleSimple(t3, buffer, GREEN);
+    DrawTriangle(t1, buffer, RED);
+    DrawTriangle(t2, buffer, WHITE);
+    DrawTriangle(t3, buffer, GREEN);
     return;
 }
