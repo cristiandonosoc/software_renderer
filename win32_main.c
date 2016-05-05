@@ -78,7 +78,7 @@ DWORD WINAPI ImageThreadFunction(LPVOID input)
             DrawObj(holder->buffer, holder->modelPath);
             break;
         case 2:
-            Triangles(holder->buffer);
+            Triangles(holder->buffer, holder->modelPath);
             break;
     }
     return 0;

@@ -4,17 +4,7 @@
 #include "line.c"
 #include "utils.c"
 #include "..\vectors.c"
-
-void DrawVertices(vertex3d *v0, vertex3d *v1, graphics_buffer *buffer)
-{
-    int x0 = (int)((v0->x + 1.0) * (double)buffer->width / (double)2);
-    int y0 = (int)((v0->y + 1.0) * (double)buffer->height / (double)2);
-
-    int x1 = (int)((v1->x + 1.0) * (double)buffer->width / (double)2);
-    int y1 = (int)((v1->y + 1.0) * (double)buffer->height / (double)2);
-
-    DrawLine(x0, y0, x1, y1, buffer, 0xFFFFFFFF);
-}
+#include "..\obj.h"
 
 // TODO: Check buffer boundaries
 void DrawTriangleScan(vec2i v0, vec2i v1, vec2i v2, graphics_buffer *buffer, int color)
@@ -128,10 +118,32 @@ void DrawTriangle(vec2i vertices[3], graphics_buffer *buffer, int color)
     }
 }
 
-void DrawTriangleSeparate(vec2i v0, vec2i v1, vec2i v2, graphics_buffer *buffer, int color)
+void DrawVertices(vertex3d *v0, vertex3d *v1, graphics_buffer *buffer)
 {
-    vec2i vecs[3] = { v0, v1, v2 };
+    int x0 = (int)((v0->x + 1.0) * (double)buffer->width / (double)2);
+    int y0 = (int)((v0->y + 1.0) * (double)buffer->height / (double)2);
+
+    int x1 = (int)((v1->x + 1.0) * (double)buffer->width / (double)2);
+    int y1 = (int)((v1->y + 1.0) * (double)buffer->height / (double)2);
+
+    DrawLine(x0, y0, x1, y1, buffer, 0xFFFFFFFF);
+}
+
+
+vec2i GetVec2iFromVertex3d(vertex3d *v, graphics_buffer *buffer)
+{
+    vec2i result = { (int)((v->x + 1.0) * (double)buffer->width / (double)2),
+                     (int)((v->y + 1.0) * (double)buffer->height / (double)2) };
+    return result;
+}
+
+void DrawTriangleFromFace(face f, graphics_buffer *buffer, int color)
+{
+    vec2i vecs[3] = { GetVec2iFromVertex3d(f.v1, buffer),
+                      GetVec2iFromVertex3d(f.v2, buffer),
+                      GetVec2iFromVertex3d(f.v3, buffer) };
     DrawTriangle(vecs, buffer, color);
 }
+
 
 #endif

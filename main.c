@@ -4,6 +4,8 @@
 #include "platform_independent/obj.c"
 #include "platform_independent/utilities.c"
 
+#include <stdlib.h>
+
 /**
  * Task 1: 2D rendering of a model
  */
@@ -32,13 +34,28 @@ void DrawObj(graphics_buffer *buffer, char *modelPath)
 /**
  * Task 2: Drawing (filled) triangles
  */
-void Triangles(graphics_buffer *buffer)
+void Triangles(graphics_buffer *buffer, char *modelPath)
 {
-    vec2i t1[3] = { {10, 70}, {50, 160}, {70, 80} };
-    vec2i t2[3] = { {180, 50}, {150, 1}, {70, 180} };
-    vec2i t3[3] = { {180, 150}, {120, 160}, {130, 180} };
-    DrawTriangle(t1, buffer, RED);
-    DrawTriangle(t2, buffer, WHITE);
-    DrawTriangle(t3, buffer, GREEN);
+    obj_model model;
+    if(!LoadObj(modelPath, &model))
+    {
+        return;
+    }
+
+    // We draw the model
+    for (int i = 0; i < model.facesCount; ++i)
+    {
+        // We draw the vertices
+        face f = model.faces[i];
+
+        int color = 0xFF000000 |
+                    ((rand() % 0xFF) << 16) |
+                    ((rand() % 0xFF) << 8) |
+                    ((rand() % 0xFF));
+        DrawTriangleFromFace(f, buffer, color);
+
+        usleep(10 * 1000);
+    }
+
     return;
 }
