@@ -1,8 +1,8 @@
 #ifndef PI_GRAPHICS_UTILS_C
 #define PI_GRAPHICS_UTILS_C
 
-#include "..\graphics.h"
-#include "..\vectors.h"
+#include "../graphics.h"
+#include "../vectors.h"
 
 void ClearBuffer(graphics_buffer *buffer, int color)
 {
@@ -19,9 +19,9 @@ void ClearBuffer(graphics_buffer *buffer, int color)
 // Borders are INCLUSIVE
 box2i GetTriangleBoundingBox2i(vec2i vertices[3], graphics_buffer *buffer)
 {
-    box2i box = { .minX = buffer->width - 1, 
+    box2i box = { .minX = buffer->width - 1,
                   .minY = buffer->height - 1,
-                  .maxX = 0, 
+                  .maxX = 0,
                   .maxY = 0 };
 
     for(int i = 0; i < 3; ++i)

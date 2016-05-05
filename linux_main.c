@@ -32,7 +32,7 @@ void *ImageThreadFunction(void *input)
             DrawObj(holder->buffer, holder->modelPath);
             break;
         case 2:
-            Triangles(holder->buffer);
+            Triangles(holder->buffer, holder->modelPath);
             break;
     }
     return 0;
@@ -46,7 +46,7 @@ void TransferBuffer(graphics_buffer *from, graphics_buffer *to)
     int *toPixel = (int *)(to->data);
     for (int y = 0; y < from->height; ++y)
     {
-        for (int x = 0; x < from->width; ++x) 
+        for (int x = 0; x < from->width; ++x)
         {
             toPixel[to->width * y + x] = fromPixel[(to->width) * (to->width - 1 - y) + x];
         }
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if ((task <= 0) || (task > MAX_TASKS) || 
+    if ((task <= 0) || (task > MAX_TASKS) ||
         (strcmp(modelPath, "") == 0))
     {
         fprintf(stdout, "Usage is: renderer -m <model_path> -t <task_number>\n");
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
                                    .task = task,
                                    .modelPath = modelPath };
     int result = pthread_create(&thread, 0, ImageThreadFunction, (void *)(&holder));
-    if (result) 
+    if (result)
     {
         fprintf(stderr, "Error with pthread_create. Code: %d\n", result);
         exit(EXIT_FAILURE);
@@ -117,10 +117,10 @@ int main(int argc, char *argv[])
     int screen = DefaultScreen(display);
     Visual *visual = DefaultVisual(display, screen);
     int depth = DefaultDepth(display, screen);
-    XImage *image = XCreateImage(display, 
+    XImage *image = XCreateImage(display,
             visual,
             depth,
-            ZPixmap, 
+            ZPixmap,
             0,
             (char *)xBuffer.data,
             winWidth,

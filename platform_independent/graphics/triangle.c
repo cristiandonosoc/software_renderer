@@ -3,8 +3,8 @@
 
 #include "line.c"
 #include "utils.c"
-#include "..\vectors.c"
-#include "..\obj.h"
+#include "../vectors.c"
+#include "../obj.h"
 
 // TODO: Check buffer boundaries
 void DrawTriangleScan(vec2i v0, vec2i v1, vec2i v2, graphics_buffer *buffer, int color)
@@ -31,7 +31,7 @@ void DrawTriangleScan(vec2i v0, vec2i v1, vec2i v2, graphics_buffer *buffer, int
         if (v0v1 > 0)
         {
             t = (double)(y - v0.y)/v0v1Diff;                // v0.y == v1.y ???
-            x0 = v0.x + (int)(t * (v1.x - v0.x));     
+            x0 = v0.x + (int)(t * (v1.x - v0.x));
             if ((x0 >= 0) && (x0 < buffer->width))
             {
                 pixel[buffer->width * y + x0] = color;
@@ -42,7 +42,7 @@ void DrawTriangleScan(vec2i v0, vec2i v1, vec2i v2, graphics_buffer *buffer, int
         if (v0v2 > 0)
         {
             t = (double)(y - v0.y)/v0v2Diff;
-            x1 = v0.x + (int)(t * (v2.x - v0.x));    
+            x1 = v0.x + (int)(t * (v2.x - v0.x));
             if ((x1 >= 0) && (x1 < buffer->width))
             {
                 pixel[buffer->width * y + x1] = color;
@@ -67,12 +67,12 @@ void DrawTriangleScan(vec2i v0, vec2i v1, vec2i v2, graphics_buffer *buffer, int
     double v1v2Diff = (double)(v2.y - v1.y);
     for (int y = v1.y + 1; y <= v2.y; ++y)
     {
-        t = (double)(y - v1.y)/v1v2Diff;                
+        t = (double)(y - v1.y)/v1v2Diff;
         int x1 = v1.x + (int)(t * (v2.x - v1.x));
         pixel[buffer->width * y + x1] = color;
 
         t = (double)(y - v0.y)/v0v2Diff;
-        int x0 = v0.x + (int)(t * (v2.x - v0.x));    
+        int x0 = v0.x + (int)(t * (v2.x - v0.x));
         pixel[buffer->width * y + x0] = color;
 
         // We fill the half
