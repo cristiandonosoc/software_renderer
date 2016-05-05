@@ -123,12 +123,17 @@ void DrawTriangle(vec2i v0, vec2i v1, vec2i v2, graphics_buffer *buffer, int col
     // First half of the triangle
     for (int y = v0.y; y <= v1.y; ++y)
     {
+        if ((y < 0) || (y >= buffer->height)) { continue; }
+
         int x0 = v0.x;
         if (v0v1 > 0)
         {
             t = (double)(y - v0.y)/v0v1Diff;                // v0.y == v1.y ???
             x0 = v0.x + (int)(t * (v1.x - v0.x));     
-            pixel[buffer->width * y + x0] = color;
+            if ((x0 >= 0) && (x0 < buffer->width))
+            {
+                pixel[buffer->width * y + x0] = color;
+            }
         }
 
         int x1 = v1.x;
@@ -136,10 +141,19 @@ void DrawTriangle(vec2i v0, vec2i v1, vec2i v2, graphics_buffer *buffer, int col
         {
             t = (double)(y - v0.y)/v0v2Diff;
             x1 = v0.x + (int)(t * (v2.x - v0.x));    
-            pixel[buffer->width * y + x1] = color;
+            if ((x1 >= 0) && (x1 < buffer->width))
+            {
+                pixel[buffer->width * y + x1] = color;
+            }
         }
 
         // We fill the half
+        if (x0 < 0) { x0 = 0; }
+        if (x0 >= buffer->width) { x0 = buffer->width; }
+
+        if (x1 < 0) { x1 = 0; }
+        if (x1 >= buffer->width) { x1 = buffer->width; }
+
         if (x1 < x0) { SWAP(x0, x1, t, int) }
         for (int x = x0 + 1; x < x1; ++x)
         {
