@@ -15,24 +15,17 @@ static graphics_buffer gBuffer;
 // Buffer to which the information is flipped
 static graphics_buffer xBuffer;
 
-typedef struct _image_thread_holder
-{
-    graphics_buffer *buffer;
-    int task;
-    char *modelPath;
-} image_thread_holder;
-
 void *ImageThreadFunction(void *input)
 {
-    image_thread_holder *holder = (image_thread_holder *)input;
+    program_info *programInfo = (program_info *)input;
     graphics_buffer *buffer = (graphics_buffer *)input;
-    switch (holder->task)
+    switch (programInfo->task)
     {
         case 1:
-            DrawObj(holder->buffer, holder->modelPath);
+            DrawObj(programInfo->buffer, programInfo->modelPath);
             break;
         case 2:
-            Triangles(holder->buffer, holder->modelPath);
+            Triangles(programInfo->buffer, programInfo->modelPath);
             break;
     }
     return 0;
@@ -55,32 +48,11 @@ void TransferBuffer(graphics_buffer *from, graphics_buffer *to)
 
 int main(int argc, char *argv[])
 {
-    int task = 0;
-    char *modelPath = "";
-    int c;
-    while((c = getopt(argc, argv, "t:m:")) != -1)
-    {
-        switch (c)
-        {
-            case 't':
-                task = atoi(optarg);
-                break;
-            case 'm':
-                modelPath = optarg;
-                break;
-        }
-    }
 
-    if ((task <= 0) || (task > MAX_TASKS) ||
-        (strcmp(modelPath, "") == 0))
-    {
-        fprintf(stdout, "Usage is: renderer -m <model_path> -t <task_number>\n");
-        fprintf(stdout, "Tasks are:\n1. Draw Obj Model 2D\n2. Triangles\n");
-        return EXIT_FAILURE;
-    }
+    program_info programInfo = GetProgramInfoFromArgs(argc, argv);
 
-    int winWidth = 500;
-    int winHeight = 500;
+    int winWidth = programInfo.winWidth;
+    int winHeight = programInfo.winHeight;
     int bytesPerPixel = 4;
 
     // We allocate the image buffer
@@ -94,10 +66,8 @@ int main(int argc, char *argv[])
 
     // We start the image thread
     pthread_t thread;
-    image_thread_holder holder = { .buffer = &gBuffer,
-                                   .task = task,
-                                   .modelPath = modelPath };
-    int result = pthread_create(&thread, 0, ImageThreadFunction, (void *)(&holder));
+    programInfo.buffer = &gBuffer;
+    int result = pthread_create(&thread, 0, ImageThreadFunction, (void *)(&programInfo));
     if (result)
     {
         fprintf(stderr, "Error with pthread_create. Code: %d\n", result);
