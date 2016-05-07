@@ -1,23 +1,13 @@
 #include <windows.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <malloc.h>
-
-#include <stdio.h>
 
 #include "platform_independent/graphics.h"
 #include "platform_independent/utilities.c"
 
 #include "main.c"
 
-#define MAX_TASKS 2
-
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-
-typedef uint8_t uint8;
-typedef uint16_t uint16;
-typedef uint32_t uint32;
-typedef uint64_t uint64;
 
 typedef struct _window_dimension
 {
@@ -34,44 +24,33 @@ window_dimension GetWindowDimensions(HWND handle)
     return result;
 }
 
-typedef struct _back_buffer
-{
-    BITMAPINFO info;
-    graphics_buffer buffer;
-} back_buffer;
-static back_buffer gBuffer;
+BITMAPINFO bitmapInfo;
+static graphics_buffer gBuffer;
 static int gLoopRunning = 1;
 
-void SetupGraphicsBuffer(int width, int height, int bytesPerPixel)
+void SetupGraphicsBuffer(graphics_buffer *buffer, int width, int height, int bytesPerPixel)
 {
     // We create out render buffer
-    gBuffer.buffer.width = width;
-    gBuffer.buffer.height = height;
-    gBuffer.buffer.bytesPerPixel = bytesPerPixel;
-    gBuffer.buffer.pitch = bytesPerPixel * width;
-    gBuffer.buffer.data = malloc(width * height * bytesPerPixel);
+    buffer->width = width;
+    buffer->height = height;
+    buffer->bytesPerPixel = bytesPerPixel;
+    buffer->pitch = bytesPerPixel * width;
+    buffer->data = malloc(width * height * bytesPerPixel);
 
     // We set the BITMAP INFO HEADER
-    gBuffer.info.bmiHeader.biSize = sizeof(gBuffer.info.bmiHeader);
-    gBuffer.info.bmiHeader.biWidth = width;
-    gBuffer.info.bmiHeader.biHeight = height;
-    gBuffer.info.bmiHeader.biPlanes = 1;
-    gBuffer.info.bmiHeader.biBitCount = bytesPerPixel * 8;
-    gBuffer.info.bmiHeader.biCompression = BI_RGB;
+    bitmapInfo.bmiHeader.biSize = sizeof(bitmapInfo.bmiHeader);
+    bitmapInfo.bmiHeader.biWidth = width;
+    bitmapInfo.bmiHeader.biHeight = height;
+    bitmapInfo.bmiHeader.biPlanes = 1;
+    bitmapInfo.bmiHeader.biBitCount = bytesPerPixel * 8;
+    bitmapInfo.bmiHeader.biCompression = BI_RGB;
 
-    ClearBuffer(&gBuffer.buffer, 0x00000000);
+    ClearBuffer(&gBuffer, 0x00000000);
 }
-
-typedef struct _image_thread_holder
-{
-    graphics_buffer *buffer;
-    int task;
-    char *modelPath;
-} image_thread_holder;
 
 DWORD WINAPI ImageThreadFunction(LPVOID input)
 {
-    image_thread_holder *holder = (image_thread_holder *)input;
+    program_info *holder = (program_info*)input;
     switch (holder->task)
     {
         case 1:
@@ -86,31 +65,11 @@ DWORD WINAPI ImageThreadFunction(LPVOID input)
 
 int main(int argc, char *argv[])
 {
-    int task = 0;
-    char *modelPath = "";
-    int c;
-    while((c = getopt(argc, argv, "t:m:")) != -1)
-    {
-        switch (c)
-        {
-            case 't':
-                task = atoi(optarg);
-                break;
-            case 'm':
-                modelPath = optarg;
-                break;
-        }
-    }
-
-    if ((task <= 0) || (task > MAX_TASKS) || 
-        (strcmp(modelPath, "") == 0))
-    {
-        fprintf(stdout, "Usage is: renderer -m <model_path> -t <task_number>\n");
-        fprintf(stdout, "Tasks are:\n1. Draw Obj Model 2D\n2. Triangles\n");
-        return EXIT_FAILURE;
-    }
+    program_info programInfo = GetProgramInfoFromArgs(argc, argv);
+    programInfo.buffer = &gBuffer;
 
     static TCHAR szAppName [] = TEXT("BitBlt") ;
+
     HWND         handle;
     WNDCLASS     wndclass;
 
@@ -134,34 +93,29 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    int winWidth = 500;
-    int winHeight = 500;
     int bytesPerPixel = 4; // RGBA
 
     handle = CreateWindowEx(0,szAppName, TEXT ("BitBlt Demo"), 
                           WS_SYSMENU,
                           CW_USEDEFAULT, CW_USEDEFAULT,         // x, y position
-                          winWidth, winHeight,                  // width, height
+                          programInfo.winWidth, programInfo.winHeight,                  // width, height
                           NULL, NULL, hInstance, NULL) ;
 
     window_dimension dim = GetWindowDimensions(handle);
 
-    SetupGraphicsBuffer(dim.width, dim.height, bytesPerPixel);
+    SetupGraphicsBuffer(&gBuffer, dim.width, dim.height, bytesPerPixel);
 
-    image_thread_holder holder = { .buffer = &gBuffer.buffer,
-                                   .task = task,
-                                   .modelPath = modelPath };
     ShowWindow(handle, SW_SHOWNORMAL);
     UpdateWindow(handle);
 
     // We create the thread that creates the image
     unsigned long threadId;
-    HANDLE imageThreadHandle = CreateThread(0,                   // No security measures
-                                            0,                   // default stack size
-                                            ImageThreadFunction, // function to be called
-                                            &holder,     // pointer to the data
-                                            0,                   // 
-                                            &threadId);          // thread id
+    HANDLE imageThreadHandle = CreateThread(0,                      // No security measures
+                                            0,                      // default stack size
+                                            ImageThreadFunction,    // function to be called
+                                            &programInfo,           // pointer to the data
+                                            0,                      // 
+                                            &threadId);             // thread id
     
     gLoopRunning = 1;
     while (gLoopRunning)
@@ -208,12 +162,12 @@ int main(int argc, char *argv[])
         HDC context = GetDC(handle);
 
         StretchDIBits(context,
-                0, 0, gBuffer.buffer.width, gBuffer.buffer.height,
-                0, 0, gBuffer.buffer.width, gBuffer.buffer.height,
-                gBuffer.buffer.data,
-                &gBuffer.info,
-                DIB_RGB_COLORS,
-                SRCCOPY);
+                      0, 0, gBuffer.width, gBuffer.height,
+                      0, 0, gBuffer.width, gBuffer.height,
+                      gBuffer.data,
+                      &bitmapInfo,
+                      DIB_RGB_COLORS,
+                      SRCCOPY);
 
         ReleaseDC(handle, context);
 
@@ -256,12 +210,12 @@ LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam
                 HDC context = BeginPaint(handle, &paint);
 
                 StretchDIBits(context,
-                        0, 0, gBuffer.buffer.width, gBuffer.buffer.height,
-                        0, 0, gBuffer.buffer.width, gBuffer.buffer.height,
-                        gBuffer.buffer.data,
-                        &gBuffer.info,
-                        DIB_RGB_COLORS,
-                        SRCCOPY);
+                              0, 0, gBuffer.width, gBuffer.height,
+                              0, 0, gBuffer.width, gBuffer.height,
+                              gBuffer.data,
+                              &bitmapInfo,
+                              DIB_RGB_COLORS,
+                              SRCCOPY);
 
                 //ReleaseDC(handle, hdcWindow);
                 EndPaint(handle, &paint);
