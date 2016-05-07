@@ -105,7 +105,7 @@ void DrawTriangle(vec2i vertices[3], graphics_buffer *buffer, int color)
             vec3d baricentric = { -1.0,
                                   (double)cross.x / -(double)cross.z,
                                   (double)cross.y / -(double)cross.z };
-            baricentric.x = 1.0 - baricentric.y - baricentric.z;
+            baricentric.x = baricentric.y + baricentric.z;
             if ((baricentric.x < 0) || (baricentric.x > 1) ||
                 (baricentric.y < 0) || (baricentric.y > 1) ||
                 (baricentric.z < 0) || (baricentric.z > 1))
