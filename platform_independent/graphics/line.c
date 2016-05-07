@@ -1,8 +1,8 @@
 #ifndef PI_GRAPHICS_LINE_C
 #define PI_GRAPHICS_LINE_C
 
-#include "..\macros.h"
-#include "..\graphics.h"
+#include "../macros.h"
+#include "../graphics.h"
 
 void DrawLine(int x0, int y0, int x1, int y1, graphics_buffer *buffer, int color)
 {
@@ -19,7 +19,7 @@ void DrawLine(int x0, int y0, int x1, int y1, graphics_buffer *buffer, int color
         int *pixel = (int *)buffer->data;
         for (int y = y0; y != y1; ++y)
         {
-            
+
             pixel[buffer->width * y + x] = color;
         }
         return;
@@ -40,9 +40,9 @@ void DrawLine(int x0, int y0, int x1, int y1, graphics_buffer *buffer, int color
     }
 
     // We iterate from left to right
-    if (x1 < x0) 
-    { 
-        SWAP(x0, x1, xTemp, int) 
+    if (x1 < x0)
+    {
+        SWAP(x0, x1, xTemp, int)
         SWAP(y0, y1, yTemp, int)
     }
 
