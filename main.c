@@ -42,19 +42,30 @@ void Triangles(graphics_buffer *buffer, char *modelPath)
         return;
     }
 
+    vec3d lightDir = { 0.0, 0.0, -1.0 };
+    NormalizeInPlace(&lightDir);
+
     // We draw the model
     for (int i = 0; i < model.facesCount; ++i)
     {
         // We draw the vertices
         face f = model.faces[i];
 
-        int color = 0xFF000000 |
-                    ((rand() % 0xFF) << 16) |
-                    ((rand() % 0xFF) << 8) |
-                    ((rand() % 0xFF));
-        DrawTriangleFromFace(f, buffer, color);
+        vec3d cross = CrossProductd(Vec3dSubstract(f.v3->v, f.v1->v),
+                                    Vec3dSubstract(f.v2->v, f.v1->v));
+        NormalizeInPlace(&cross);
 
-        usleep(10 * 1000);
+        double intensity = DotProductd(cross, lightDir);
+        if (intensity > 0.0)
+        {
+            int color = 0xFF000000 |
+                        ((int)(intensity * 0xFF) << 16) |
+                        ((int)(intensity * 0xFF) << 8) |
+                        ((int)(intensity * 0xFF));
+            DrawTriangleFromFace(f, buffer, color);
+
+            usleep(10 * 1000);
+        }
     }
 
     return;
