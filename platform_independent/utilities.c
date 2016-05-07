@@ -56,13 +56,14 @@ program_info GetProgramInfoFromArgs(int argc, char *argv[])
                 result.winHeight = atoi(optarg + xIndex + 1);
                 break;
 wrong_size:
-                fprintf(stderr, "Please specify a correct size: \"<width>x<height>\"");
+                fprintf(stderr, "Please specify a correct size: \"<width>x<height>\"\n" //str concat
+                                "Using default 700x700\n");
                 break;
             }
         }
     }
 
-    if ((result.task <= 0) || (result.task > MAX_TASKS) || 
+    if ((result.task <= 0) || (result.task > MAX_TASKS) ||
         (strcmp(result.modelPath, "") == 0))
     {
         fprintf(stdout, "Usage is: renderer -m <model_path> -t <task_number> -s <widthxheight>\n");
