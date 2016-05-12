@@ -28,26 +28,6 @@ BITMAPINFO bitmapInfo;
 static graphics_buffer gBuffer;
 static int gLoopRunning = 1;
 
-void SetupGraphicsBuffer(graphics_buffer *buffer, int width, int height, int bytesPerPixel)
-{
-    // We create out render buffer
-    buffer->width = width;
-    buffer->height = height;
-    buffer->bytesPerPixel = bytesPerPixel;
-    buffer->pitch = bytesPerPixel * width;
-    buffer->data = malloc(width * height * bytesPerPixel);
-
-    // We set the BITMAP INFO HEADER
-    bitmapInfo.bmiHeader.biSize = sizeof(bitmapInfo.bmiHeader);
-    bitmapInfo.bmiHeader.biWidth = width;
-    bitmapInfo.bmiHeader.biHeight = height;
-    bitmapInfo.bmiHeader.biPlanes = 1;
-    bitmapInfo.bmiHeader.biBitCount = bytesPerPixel * 8;
-    bitmapInfo.bmiHeader.biCompression = BI_RGB;
-
-    ClearBuffer(&gBuffer, 0x00000000);
-}
-
 DWORD WINAPI ImageThreadFunction(LPVOID input)
 {
     program_info *holder = (program_info*)input;
@@ -103,7 +83,16 @@ int main(int argc, char *argv[])
 
     window_dimension dim = GetWindowDimensions(handle);
 
+    // We set the BITMAP INFO HEADER
+    bitmapInfo.bmiHeader.biSize = sizeof(bitmapInfo.bmiHeader);
+    bitmapInfo.bmiHeader.biWidth = dim.width;
+    bitmapInfo.bmiHeader.biHeight = dim.height;
+    bitmapInfo.bmiHeader.biPlanes = 1;
+    bitmapInfo.bmiHeader.biBitCount = bytesPerPixel * 8;
+    bitmapInfo.bmiHeader.biCompression = BI_RGB;
+
     SetupGraphicsBuffer(&gBuffer, dim.width, dim.height, bytesPerPixel);
+    ClearBuffer(&gBuffer, 0x00000000);
 
     ShowWindow(handle, SW_SHOWNORMAL);
     UpdateWindow(handle);

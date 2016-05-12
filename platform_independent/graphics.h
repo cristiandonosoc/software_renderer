@@ -11,6 +11,7 @@ typedef struct _graphics_buffer
   int pitch;
 
   void *data;
+  void *zBuffer;
 } graphics_buffer;
 
 

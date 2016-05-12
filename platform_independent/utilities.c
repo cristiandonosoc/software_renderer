@@ -74,6 +74,15 @@ wrong_size:
     return result;
 }
 
-
+void SetupGraphicsBuffer(graphics_buffer *buffer, int width, int height, int bytesPerPixel)
+{
+    // We create out render buffer
+    buffer->width = width;
+    buffer->height = height;
+    buffer->bytesPerPixel = bytesPerPixel;
+    buffer->pitch = bytesPerPixel * width;
+    buffer->data = malloc(width * height * bytesPerPixel);
+    buffer->zBuffer = malloc(width * height * bytesPerPixel);
+}
 
 #endif

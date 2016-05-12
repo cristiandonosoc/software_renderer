@@ -113,6 +113,7 @@ void DrawTriangle(vec2i vertices[3], graphics_buffer *buffer, int color)
                 continue;
             }
 
+
             pixel[buffer->width * y + x] = color;
         }
     }
@@ -139,10 +140,49 @@ vec2i GetVec2iFromVertex3d(vertex3d *v, graphics_buffer *buffer)
 
 void DrawTriangleFromFace(face f, graphics_buffer *buffer, int color)
 {
-    vec2i vecs[3] = { GetVec2iFromVertex3d(f.v1, buffer),
-                      GetVec2iFromVertex3d(f.v2, buffer),
-                      GetVec2iFromVertex3d(f.v3, buffer) };
-    DrawTriangle(vecs, buffer, color);
+    vec2i vertices[3] = { GetVec2iFromVertex3d(f.v1, buffer),
+                          GetVec2iFromVertex3d(f.v2, buffer),
+                          GetVec2iFromVertex3d(f.v3, buffer) };
+
+    float *zBuffer = (float *)buffer->zBuffer;
+    int *pixel = (int *)buffer->data;
+    box2i boundingBox = GetTriangleBoundingBox2i(vertices, buffer);
+    for (int y = boundingBox.minY; y <= boundingBox.maxY; ++y)
+    {
+        for (int x = boundingBox.minX; x <= boundingBox.maxX; ++x)
+        {
+            vec3i xVec = { vertices[1].x - vertices[0].x,
+                           vertices[2].x - vertices[0].x,
+                                       x - vertices[0].x };
+
+            vec3i yVec = { vertices[1].y - vertices[0].y,
+                           vertices[2].y - vertices[0].y,
+                                       y - vertices[0].y };
+
+            vec3i cross = CrossProducti(xVec, yVec);
+
+            vec3d baricentric = { -1.0,
+                                  (double)cross.x / -(double)cross.z,
+                                  (double)cross.y / -(double)cross.z };
+            baricentric.x = 1.0 - (baricentric.y + baricentric.z);
+            if ((baricentric.x < 0) || (baricentric.x > 1) ||
+                (baricentric.y < 0) || (baricentric.y > 1) ||
+                (baricentric.z < 0) || (baricentric.z > 1))
+            {
+                continue;
+            }
+
+            // We check the z buffer
+            float z = (float)((baricentric.x * f.v1->z) +
+                              (baricentric.y * f.v2->z) +
+                              (baricentric.z * f.v3->z));
+
+            if (zBuffer[buffer->width * y + x] >= z) { continue; }
+            zBuffer[buffer->width * y + x] = z;
+            pixel[buffer->width * y + x] = color;
+        }
+    }
+
 }
 
 
