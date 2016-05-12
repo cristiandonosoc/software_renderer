@@ -13,7 +13,9 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#define MAX_TASKS 2
+#include "../main.c"
+
+#define MAX_TASKS 3
 typedef uint8_t uint8;
 typedef uint16_t uint16;
 typedef uint32_t uint32;
@@ -72,6 +74,22 @@ wrong_size:
     }
 
     return result;
+}
+
+void SelectTask(program_info *programInfo)
+{
+    switch (programInfo->task)
+    {
+        case 1:
+            DrawObj(programInfo->buffer, programInfo->modelPath);
+            break;
+        case 2:
+            Triangles(programInfo->buffer, programInfo->modelPath);
+            break;
+        case 3:
+            TrianglesWithZBuffer(programInfo->buffer, programInfo->modelPath);
+            break;
+    }
 }
 
 void SetupGraphicsBuffer(graphics_buffer *buffer, int width, int height, int bytesPerPixel)

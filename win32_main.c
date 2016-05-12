@@ -5,8 +5,6 @@
 #include "platform_independent/graphics.h"
 #include "platform_independent/utilities.c"
 
-#include "main.c"
-
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 typedef struct _window_dimension
@@ -30,16 +28,8 @@ static int gLoopRunning = 1;
 
 DWORD WINAPI ImageThreadFunction(LPVOID input)
 {
-    program_info *holder = (program_info*)input;
-    switch (holder->task)
-    {
-        case 1:
-            DrawObj(holder->buffer, holder->modelPath);
-            break;
-        case 2:
-            Triangles(holder->buffer, holder->modelPath);
-            break;
-    }
+    program_info *programInfo = (program_info*)input;
+    SelectTask(programInfo);
     return 0;
 }
 
