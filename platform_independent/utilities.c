@@ -76,22 +76,6 @@ wrong_size:
     return result;
 }
 
-void SelectTask(program_info *programInfo)
-{
-    switch (programInfo->task)
-    {
-        case 1:
-            DrawObj(programInfo->buffer, programInfo->modelPath);
-            break;
-        case 2:
-            Triangles(programInfo->buffer, programInfo->modelPath);
-            break;
-        case 3:
-            TrianglesWithZBuffer(programInfo->buffer, programInfo->modelPath);
-            break;
-    }
-}
-
 void SetupGraphicsBuffer(graphics_buffer *buffer, int width, int height, int bytesPerPixel)
 {
     // We create out render buffer

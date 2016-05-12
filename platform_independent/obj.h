@@ -18,7 +18,7 @@ typedef struct _obj_model
     vertex3d *vertices;
     int vertexCount;
     face *faces;
-    int facesCount;
+    int faceCount;
 } obj_model;
 
 #endif

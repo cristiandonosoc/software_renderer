@@ -18,7 +18,7 @@ void DrawObj(graphics_buffer *buffer, char *modelPath)
     }
 
     // We draw the model
-    for (int i = 0; i < model.facesCount; ++i)
+    for (int i = 0; i < model.faceCount; ++i)
     {
         // We draw the vertices
         face f = model.faces[i];
@@ -46,7 +46,7 @@ void Triangles(graphics_buffer *buffer, char *modelPath)
     NormalizeInPlace(&lightDir);
 
     // We draw the model
-    for (int i = 0; i < model.facesCount; ++i)
+    for (int i = 0; i < model.faceCount; ++i)
     {
         // We draw the vertices
         face f = model.faces[i];
@@ -85,7 +85,7 @@ void TrianglesWithZBuffer(graphics_buffer *buffer, char *modelPath)
     NormalizeInPlace(&lightDir);
 
     // We draw the model
-    for (int i = 0; i < model.facesCount; ++i)
+    for (int i = 0; i < model.faceCount; ++i)
     {
         // We draw the vertices
         face f = model.faces[i];
@@ -111,3 +111,21 @@ void TrianglesWithZBuffer(graphics_buffer *buffer, char *modelPath)
 
 
 }
+
+void SelectTask(program_info *programInfo)
+{
+    switch (programInfo->task)
+    {
+        case 1:
+            DrawObj(programInfo->buffer, programInfo->modelPath);
+            break;
+        case 2:
+            Triangles(programInfo->buffer, programInfo->modelPath);
+            break;
+        case 3:
+            TrianglesWithZBuffer(programInfo->buffer, programInfo->modelPath);
+            break;
+    }
+}
+
+
