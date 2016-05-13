@@ -3,6 +3,13 @@
 
 #include "graphics.h"
 
+typedef struct _vertex3d
+{
+    vec3d position;
+    vec3d normal;
+    vec3d textureCoord;
+} vertex3d;
+
 typedef struct _face
 {
     int i1;

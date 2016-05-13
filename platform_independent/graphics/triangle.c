@@ -121,11 +121,11 @@ void DrawTriangle(vec2i vertices[3], graphics_buffer *buffer, int color)
 
 void DrawVertices(vertex3d *v0, vertex3d *v1, graphics_buffer *buffer)
 {
-    int x0 = (int)((v0->x + 1.0) * (double)buffer->width / (double)2);
-    int y0 = (int)((v0->y + 1.0) * (double)buffer->height / (double)2);
+    int x0 = (int)((v0->position.x + 1.0) * (double)buffer->width / (double)2);
+    int y0 = (int)((v0->position.y + 1.0) * (double)buffer->height / (double)2);
 
-    int x1 = (int)((v1->x + 1.0) * (double)buffer->width / (double)2);
-    int y1 = (int)((v1->y + 1.0) * (double)buffer->height / (double)2);
+    int x1 = (int)((v1->position.x + 1.0) * (double)buffer->width / (double)2);
+    int y1 = (int)((v1->position.y + 1.0) * (double)buffer->height / (double)2);
 
     DrawLine(x0, y0, x1, y1, buffer, 0xFFFFFFFF);
 }
@@ -133,8 +133,8 @@ void DrawVertices(vertex3d *v0, vertex3d *v1, graphics_buffer *buffer)
 
 vec2i GetVec2iFromVertex3d(vertex3d *v, graphics_buffer *buffer)
 {
-    vec2i result = { (int)((v->x + 1.0) * (double)buffer->width / (double)2),
-                     (int)((v->y + 1.0) * (double)buffer->height / (double)2) };
+    vec2i result = { (int)((v->position.x + 1.0) * (double)buffer->width / (double)2),
+                     (int)((v->position.y + 1.0) * (double)buffer->height / (double)2) };
     return result;
 }
 
@@ -173,9 +173,9 @@ void DrawTriangleFromFace(face f, graphics_buffer *buffer, int color)
             }
 
             // We check the z buffer
-            float z = (float)((baricentric.x * f.v1->z) +
-                              (baricentric.y * f.v2->z) +
-                              (baricentric.z * f.v3->z));
+            float z = (float)((baricentric.x * f.v1->position.z) +
+                              (baricentric.y * f.v2->position.z) +
+                              (baricentric.z * f.v3->position.z));
 
             if (zBuffer[buffer->width * y + x] >= z) { continue; }
             zBuffer[buffer->width * y + x] = z;

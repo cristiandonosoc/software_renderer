@@ -12,7 +12,7 @@
 void DrawObj(graphics_buffer *buffer, char *modelPath)
 {
     obj_model model;
-    if(!LoadObj(modelPath, &model))
+    if(!ParseObj(modelPath, &model))
     {
         return;
     }
@@ -37,7 +37,7 @@ void DrawObj(graphics_buffer *buffer, char *modelPath)
 void Triangles(graphics_buffer *buffer, char *modelPath)
 {
     obj_model model;
-    if(!LoadObj(modelPath, &model))
+    if(!ParseObj(modelPath, &model))
     {
         return;
     }
@@ -51,8 +51,8 @@ void Triangles(graphics_buffer *buffer, char *modelPath)
         // We draw the vertices
         face f = model.faces[i];
 
-        vec3d cross = CrossProductd(Vec3dSubstract(f.v3->v, f.v1->v),
-                                    Vec3dSubstract(f.v2->v, f.v1->v));
+        vec3d cross = CrossProductd(Vec3dSubstract(f.v3->position, f.v1->position),
+                                    Vec3dSubstract(f.v2->position, f.v1->position));
         NormalizeInPlace(&cross);
 
         double intensity = DotProductd(cross, lightDir);
@@ -79,7 +79,7 @@ void Triangles(graphics_buffer *buffer, char *modelPath)
 void TrianglesWithZBuffer(graphics_buffer *buffer, char *modelPath)
 {
     obj_model model;
-    if(!LoadObj(modelPath, &model)) { return; }
+    if(!ParseObj(modelPath, &model)) { return; }
 
     vec3d lightDir = { 0.0, 0.0, -1.0 };
     NormalizeInPlace(&lightDir);
@@ -90,8 +90,8 @@ void TrianglesWithZBuffer(graphics_buffer *buffer, char *modelPath)
         // We draw the vertices
         face f = model.faces[i];
 
-        vec3d cross = CrossProductd(Vec3dSubstract(f.v3->v, f.v1->v),
-                                    Vec3dSubstract(f.v2->v, f.v1->v));
+        vec3d cross = CrossProductd(Vec3dSubstract(f.v3->position, f.v1->position),
+                                    Vec3dSubstract(f.v2->position, f.v1->position));
         NormalizeInPlace(&cross);
 
         double intensity = DotProductd(cross, lightDir);
