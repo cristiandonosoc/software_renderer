@@ -137,35 +137,37 @@ void PrintParsingError(parsing_status *parseStatus, char *errorMessage)
     fprintf(stderr, "%s\n", lineBuffer);
 }
 
-int ParseVertex(parsing_status *parseStatus, obj_model *model)
+int ParseVertex(parsing_status *parseStatus)
 {
     // for convenience
     token *t = &(parseStatus->currentToken);
+    parsing_buffers *parsingBuffers = &(parseStatus->parsingBuffers);
+    float value;
 
     // X coordinate
     GetNextToken(parseStatus);
     if ((t->kind != TOKEN_FLOAT) && (t->kind != TOKEN_INT)) { goto vertex_error; }
-    if (t->kind == TOKEN_FLOAT) { model->vertices[model->vertexCount].position.x = t->float_value; }
-    else { model->vertices[model->vertexCount].position.x = t->int_value; }
+    value = (t->kind == TOKEN_FLOAT) ? t->float_value : (float)t->int_value;
+    parsingBuffers->positions[parsingBuffers->positionCount].x = value;
 
     // Y coordinate
     GetNextToken(parseStatus);
     if ((t->kind != TOKEN_FLOAT) && (t->kind != TOKEN_INT)) { goto vertex_error; }
-    if (t->kind == TOKEN_FLOAT) { model->vertices[model->vertexCount].position.y = t->float_value; }
-    else { model->vertices[model->vertexCount].position.y = t->int_value; }
+    value = (t->kind == TOKEN_FLOAT) ? t->float_value : (float)t->int_value;
+    parsingBuffers->positions[parsingBuffers->positionCount].y = value;
 
     // Z coordinate
     GetNextToken(parseStatus);
     if ((t->kind != TOKEN_FLOAT) && (t->kind != TOKEN_INT)) { goto vertex_error; }
-    if (t->kind == TOKEN_FLOAT) { model->vertices[model->vertexCount].position.z = t->float_value; }
-    else { model->vertices[model->vertexCount].position.z = t->int_value; }
+    value = (t->kind == TOKEN_FLOAT) ? t->float_value : (float)t->int_value;
+    parsingBuffers->positions[parsingBuffers->positionCount].z = value;
 
     // The line stops
     GetNextToken(parseStatus);
     if (t->kind != TOKEN_NEW_LINE) { goto vertex_error; }
 
     // We completed a vertex
-    ++(model->vertexCount);
+    ++(parsingBuffers->positionCount);
     return 1;
 
 vertex_error:
@@ -173,38 +175,42 @@ vertex_error:
     return 0;
 }
 
-int ParseTextureCoordinates(parsing_status *parseStatus, obj_model *model)
+int ParseTextureCoordinates(parsing_status *parseStatus)
 {
     // for convenience
     token *t = &(parseStatus->currentToken);
+    parsing_buffers *parsingBuffers = &(parseStatus->parsingBuffers);
+    float value;
 
     // X coordinate
     GetNextToken(parseStatus);
     if ((t->kind != TOKEN_FLOAT) && (t->kind != TOKEN_INT)) { goto tex_coord_error; }
-    /* if (t->kind == TOKEN_FLOAT) { model->vertices[model->vertexCount].textureCoord.x = t->float_value; } */
-    /* else { model->vertices[model->vertexCount].textureCoord.x = t->int_value; } */
+    value = (t->kind == TOKEN_FLOAT) ? t->float_value : (float)t->int_value;
+    parsingBuffers->texCoords[parsingBuffers->texCoordCount].x = value;
 
     // Y coordinate
     GetNextToken(parseStatus);
     if ((t->kind != TOKEN_FLOAT) && (t->kind != TOKEN_INT)) { goto tex_coord_error; }
-    /* if (t->kind == TOKEN_FLOAT) { model->vertices[model->vertexCount].textureCoord.y = t->float_value; } */
-    /* else { model->vertices[model->vertexCount].textureCoord.y = t->int_value; } */
+    value = (t->kind == TOKEN_FLOAT) ? t->float_value : (float)t->int_value;
+    parsingBuffers->texCoords[parsingBuffers->texCoordCount].y = value;
 
     // (OPTIONAL) coordinate
     GetNextToken(parseStatus);
     if (t->kind == TOKEN_NEW_LINE) 
     { 
-        model->vertices[model->vertexCount].textureCoord.z = 0.0;  // Default
+        parsingBuffers->texCoords[parsingBuffers->texCoordCount].z = 0.0;
         return 1; 
     }
     if ((t->kind != TOKEN_FLOAT) && (t->kind != TOKEN_INT)) { goto tex_coord_error; }
-    /* if (t->kind == TOKEN_FLOAT) { model->vertices[model->vertexCount].textureCoord.z = t->float_value; } */
-    /* else { model->vertices[model->vertexCount].textureCoord.z = t->int_value; } */
+    value = (t->kind == TOKEN_FLOAT) ? t->float_value : (float)t->int_value;
+    parsingBuffers->texCoords[parsingBuffers->texCoordCount].z = value;
 
     // The line stops
     GetNextToken(parseStatus);
     if (t->kind != TOKEN_NEW_LINE) { goto tex_coord_error; }
 
+    // We completed a texture coordinate
+    ++(parsingBuffers->texCoordCount);
     return 1;
 
 tex_coord_error:
@@ -212,35 +218,37 @@ tex_coord_error:
     return 0;
 }
 
-int ParseNormal(parsing_status *parseStatus, obj_model *model)
+int ParseNormal(parsing_status *parseStatus)
 {
-    // TODO:REMOVE
-    model = 0;
     // for convenience
     token *t = &(parseStatus->currentToken);
+    parsing_buffers *parsingBuffers = &(parseStatus->parsingBuffers);
+    float value;
 
     // X coordinate
     GetNextToken(parseStatus);
     if ((t->kind != TOKEN_FLOAT) && (t->kind != TOKEN_INT)) { goto normal_error; }
-    /* if (t->kind == TOKEN_FLOAT) { model->vertices[model->vertexCount].normal.x = t->float_value; } */
-    /* else { model->vertices[model->vertexCount].normal.x = t->int_value; } */
+    value = (t->kind == TOKEN_FLOAT) ? t->float_value : (float)t->int_value;
+    parsingBuffers->normals[parsingBuffers->normalCount].x = value;
 
     // Y coordinate
     GetNextToken(parseStatus);
     if ((t->kind != TOKEN_FLOAT) && (t->kind != TOKEN_INT)) { goto normal_error; }
-    /* if (t->kind == TOKEN_FLOAT) { model->vertices[model->vertexCount].normal.y = t->float_value; } */
-    /* else { model->vertices[model->vertexCount].normal.y = t->int_value; } */
+    value = (t->kind == TOKEN_FLOAT) ? t->float_value : (float)t->int_value;
+    parsingBuffers->normals[parsingBuffers->normalCount].y = value;
 
     // Z coordinate
     GetNextToken(parseStatus);
     if ((t->kind != TOKEN_FLOAT) && (t->kind != TOKEN_INT)) { goto normal_error; }
-    /* if (t->kind == TOKEN_FLOAT) { model->vertices[model->vertexCount].normal.z = t->float_value; } */
-    /* else { model->vertices[model->vertexCount].normal.z = t->int_value; } */
+    value = (t->kind == TOKEN_FLOAT) ? t->float_value : (float)t->int_value;
+    parsingBuffers->normals[parsingBuffers->normalCount].z = value;
 
     // The line stops
     GetNextToken(parseStatus);
     if (t->kind != TOKEN_NEW_LINE) { goto normal_error; }
 
+    // We completed a texture coordinate
+    ++(parsingBuffers->normalCount);
     return 1;
 
 normal_error:
@@ -248,14 +256,11 @@ normal_error:
     return 0;
 }
 
-
-int ParseFaceStmt(parsing_status *parseStatus, obj_model *model)
+int ParseFaceStmt(parsing_status *parseStatus, obj_model *model, int vertexIndex)
 {
-    // TODO: REMOVE
-    model = 0;
-
     // for convenience
     token *t = &(parseStatus->currentToken);
+    parsing_buffers *parsingBuffers = &(parseStatus->parsingBuffers);
 
     // We see if we get texture coords
     GetNextToken(parseStatus);
@@ -264,7 +269,7 @@ int ParseFaceStmt(parsing_status *parseStatus, obj_model *model)
         GetNextToken(parseStatus);
         if (t->kind == TOKEN_INT)
         {
-            // TODO: PROCESS TEXTURE COORDINATE
+            model->vertices[vertexIndex].textureCoord = parsingBuffers->texCoords[vertexIndex];
             
             // We see if we also get normals
             GetNextToken(parseStatus);
@@ -272,9 +277,7 @@ int ParseFaceStmt(parsing_status *parseStatus, obj_model *model)
             {
                 GetNextToken(parseStatus);
                 if (t->kind != TOKEN_INT) { return 0; }
-
-                // TODO: PROCESS NORMAL
-                
+                model->vertices[vertexIndex].normal = parsingBuffers->normals[vertexIndex];
                 // The token is taken after
             }
 
@@ -285,13 +288,10 @@ int ParseFaceStmt(parsing_status *parseStatus, obj_model *model)
         {
             GetNextToken(parseStatus);
             if (t->kind != TOKEN_INT) { return 0; }
-            
-            // TODO: PROCESS NORMAL
-            
+            model->vertices[vertexIndex].normal = parsingBuffers->normals[vertexIndex];
             // We need to take the next token
             GetNextToken(parseStatus);
         }
-    
     }
     else if (t->kind != TOKEN_INT) { return 0; }
 
@@ -303,29 +303,30 @@ int ParseFace(parsing_status *parseStatus, obj_model *model)
     // NOTE: ParseFaceStmt takes the next token after the value stmt
     // for convenience
     token *t = &(parseStatus->currentToken);
+    parsing_buffers *parsingBuffers = &(parseStatus->parsingBuffers);
     int index;
 
     GetNextToken(parseStatus);
     if (parseStatus->currentToken.kind != TOKEN_INT) { goto face_error; }
     index = t->int_value - 1;
+    model->vertices[index].position = parsingBuffers->positions[index];
     model->faces[model->faceCount].i1 = index;
     model->faces[model->faceCount].v1 = &(model->vertices[index]);
-
-    if(!ParseFaceStmt(parseStatus, model)) { goto face_error; }
+    if(!ParseFaceStmt(parseStatus, model, index)) { goto face_error; }
 
     // We process the next batch
     index = t->int_value - 1;
+    model->vertices[index].position = parsingBuffers->positions[index];
     model->faces[model->faceCount].i2 = index;
     model->faces[model->faceCount].v2 = &(model->vertices[index]);
-
-    if(!ParseFaceStmt(parseStatus, model)) { goto face_error; }
+    if(!ParseFaceStmt(parseStatus, model, index)) { goto face_error; }
 
     // We process the next batch
     index = t->int_value - 1;
+    model->vertices[index].position = parsingBuffers->positions[index];
     model->faces[model->faceCount].i3 = index;
     model->faces[model->faceCount].v3 = &(model->vertices[index]);
-
-    if(!ParseFaceStmt(parseStatus, model)) { goto face_error; }
+    if(!ParseFaceStmt(parseStatus, model, index)) { goto face_error; }
 
     if (parseStatus->currentToken.kind != TOKEN_NEW_LINE) { goto face_error; }
 
@@ -372,12 +373,21 @@ int ParseObj(char *filename, obj_model *model)
     model->vertexCount = 0;
     model->faceCount = 0;
 
-    parsing_status parseStatus = { .currentToken = { TOKEN_UNSUPPORTED, { 0 } },
-                                   .parsePoint = text,
-                                   .lineStart = text,
-                                   .lineNumber = 1,
-                                   .charNumber = 1,
-                                   .parsing = 1 };
+    // We setup the parsing buffers
+    parsing_status parseStatus = {  .parsingBuffers = {
+                                        .positions = (vec3d *)malloc(MAX_VERTEX * sizeof(vec3d)),
+                                        .positionCount = 0,
+                                        .texCoords = (vec3d *)malloc(MAX_VERTEX * sizeof(vec3d)),
+                                        .texCoordCount = 0,
+                                        .normals = (vec3d *)malloc(MAX_VERTEX * sizeof(vec3d)),
+                                        .normalCount = 0
+                                    },
+                                    .currentToken = { TOKEN_UNSUPPORTED, { 0 } },
+                                    .parsePoint = text,
+                                    .lineStart = text,
+                                    .lineNumber = 1,
+                                    .charNumber = 1,
+                                    .parsing = 1 };
 
     // We get the first token
     GetNextToken(&parseStatus);
@@ -387,13 +397,13 @@ int ParseObj(char *filename, obj_model *model)
         switch (parseStatus.currentToken.kind)
         {
             case TOKEN_VERTEX:
-                parseStatus.parsing = ParseVertex(&parseStatus, model);
+                parseStatus.parsing = ParseVertex(&parseStatus);
                 break;
             case TOKEN_TEXTURE_COORD:
-                parseStatus.parsing = ParseTextureCoordinates(&parseStatus, model);
+                parseStatus.parsing = ParseTextureCoordinates(&parseStatus);
                 break;
             case TOKEN_NORMAL:
-                parseStatus.parsing = ParseNormal(&parseStatus, model);
+                parseStatus.parsing = ParseNormal(&parseStatus);
                 break;
             case TOKEN_FACE:
                 parseStatus.parsing = ParseFace(&parseStatus, model);
@@ -407,6 +417,18 @@ int ParseObj(char *filename, obj_model *model)
 
         GetNextToken(&parseStatus);
     }
+
+    if (parseStatus.parsing == 0) // error while parsing
+    {
+        free(model->vertices);
+        free(model->faces);
+    }
+
+    // Now that we're done, we free everything
+    free(text);
+    free(parseStatus.parsingBuffers.positions);
+    free(parseStatus.parsingBuffers.texCoords);
+    free(parseStatus.parsingBuffers.normals);
 
     return 1;
 }

@@ -1,6 +1,8 @@
 #ifndef PI_OBJ_PARSING_H
 #define PI_OBJ_PARSING_H
 
+#include "..\vectors.h"
+
 typedef enum _token_kind 
 {
     TOKEN_VERTEX,
@@ -24,8 +26,19 @@ typedef struct _token
     };
 } token;
 
+typedef struct _parsing_buffers
+{
+    vec3d *positions;
+    int positionCount;
+    vec3d *texCoords;
+    int texCoordCount;
+    vec3d *normals;
+    int normalCount;
+} parsing_buffers;
+
 typedef struct _parsing_status
 {
+    parsing_buffers parsingBuffers;
     token currentToken;
     char *parsePoint;
     char *lineStart;
