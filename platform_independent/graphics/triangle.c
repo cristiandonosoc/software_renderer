@@ -5,6 +5,7 @@
 #include "utils.c"
 #include "../vectors.c"
 #include "../obj.h"
+#include "../texture.c"
 
 // TODO: Check buffer boundaries
 void DrawTriangleScan(vec2i v0, vec2i v1, vec2i v2, graphics_buffer *buffer, int color)
@@ -130,13 +131,13 @@ void DrawVertices(vertex3d *v0, vertex3d *v1, graphics_buffer *buffer)
     DrawLine(x0, y0, x1, y1, buffer, 0xFFFFFFFF);
 }
 
-
 vec2i GetVec2iFromVertex3d(vertex3d *v, graphics_buffer *buffer)
 {
     vec2i result = { (int)((v->position.x + 1.0) * (double)buffer->width / (double)2),
                      (int)((v->position.y + 1.0) * (double)buffer->height / (double)2) };
     return result;
 }
+
 
 void DrawTriangleFromFace(face f, graphics_buffer *buffer, int color)
 {
@@ -182,7 +183,54 @@ void DrawTriangleFromFace(face f, graphics_buffer *buffer, int color)
             pixel[buffer->width * y + x] = color;
         }
     }
+}
 
+void DrawTriangleFromFaceWithTexture(face f, graphics_buffer *buffer, texture *tex, int intensity)
+{
+    vec2i vertices[3] = { GetVec2iFromVertex3d(f.v1, buffer),
+                          GetVec2iFromVertex3d(f.v2, buffer),
+                          GetVec2iFromVertex3d(f.v3, buffer) };
+
+    int *pixel = (int *)buffer->data;
+    box2i boundingBox = GetTriangleBoundingBox2i(vertices, buffer);
+    for (int y = boundingBox.minY; y <= boundingBox.maxY; ++y)
+    {
+        for (int x = boundingBox.minX; x <= boundingBox.maxX; ++x)
+        {
+            vec3d baricentric = ObtainBaricentricCoordenate(x, y, vertices);
+            if ((baricentric.x < 0) || (baricentric.x > 1) ||
+                (baricentric.y < 0) || (baricentric.y > 1) ||
+                (baricentric.z < 0) || (baricentric.z > 1))
+            {
+                continue;
+            }
+
+            // We check the z buffer
+            float z = InterpolateBaricentric(baricentric, f.v1->position.z, 
+                                                          f.v2->position.z, 
+                                                          f.v3->position.z);
+            if (!UpdateZBuffer(x, y, z, buffer)) { continue; }
+
+            // We obtain the color
+            float texCoordX = InterpolateBaricentric(baricentric, f.v1->textureCoord.x,
+                                                                  f.v2->textureCoord.x,
+                                                                  f.v3->textureCoord.x);
+            texCoordX = Clampd(texCoordX, 0.0, 1.0);
+            float texCoordY = InterpolateBaricentric(baricentric, f.v1->textureCoord.y,
+                                                                  f.v2->textureCoord.y,
+                                                                  f.v3->textureCoord.y);
+            texCoordY = 1.0 - texCoordY;
+            texCoordY = Clampd(texCoordY, 0.0, 1.0);
+
+            int texX = (int)(texCoordX * (tex->width - 1));
+            int texY = (int)(texCoordY * (tex->height - 1));
+            int *texPixel = (int *)tex->data;
+            // Format is ABGR
+            int color = ObtainARGBFromABGR(texPixel[tex->width * texY + texX]);
+
+            pixel[buffer->width * y + x] = color;
+        }
+    }
 }
 
 
