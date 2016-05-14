@@ -3,6 +3,10 @@
 
 #include "..\vectors.h"
 
+// For now we allocate a shitload of vertex
+#define MAX_VERTEX 5000
+#define MAX_FACES 5000
+
 typedef enum _token_kind 
 {
     TOKEN_VERTEX,

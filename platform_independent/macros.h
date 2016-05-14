@@ -1,7 +1,6 @@
 #ifndef MACROS_H
 #define MACROS_H
 
-#define _CRT_SECURE_NO_WARNINGS 
 // NOTE: Cannot be used with expressions
 #define SWAP(a, b, temp, type) type temp = a; a = b; b = temp;
 
