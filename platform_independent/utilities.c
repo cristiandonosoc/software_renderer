@@ -13,8 +13,6 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "../main.c"
-
 #define MAX_TASKS 4
 typedef uint8_t uint8;
 typedef uint16_t uint16;

@@ -20,19 +20,17 @@ void ClearBuffer(graphics_buffer *buffer, int color)
 box2i GetTriangleBoundingBox2i(vec2i vertices[3], graphics_buffer *buffer)
 {
     // Max impossible bounding box at start
-    box2i box = { .minX = buffer->width - 1, 
-                  .minY = buffer->height - 1,
-                  .maxX = 0,
-                  .maxY = 0 };
+    box2i box = { .min = { buffer->width - 1, buffer->height - 1 },
+                  .max = { 0, 0 } };
 
     for(int i = 0; i < 3; ++i)
     {
         int x = vertices[i].x;
         int y = vertices[i].y;
-        if ((x < box.minX) && (x >= 0)) { box.minX = x; }
-        if ((y < box.minY) && (y >= 0)) { box.minY = y; }
-        if ((x > box.maxX) && (x < buffer->width))  { box.maxX = x; }
-        if ((y > box.maxY) && (y < buffer->height)) { box.maxY = y; }
+        if ((x < box.min.x) && (x >= 0)) { box.min.x = x; }
+        if ((y < box.min.y) && (y >= 0)) { box.min.y = y; }
+        if ((x > box.max.x) && (x < buffer->width))  { box.max.x = x; }
+        if ((y > box.max.y) && (y < buffer->height)) { box.max.y = y; }
     }
     return box;
 }

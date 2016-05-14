@@ -2,7 +2,7 @@
 #define PI_OBJ_PARSING_C
 
 #include "parsing.h"
-#include "..\obj.h"
+#include "../obj.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -29,8 +29,8 @@ void GetNextToken(parsing_status *parseStatus)
             c = *(++parsePoint);
         }
         if (c == '\n')
-        { 
-            ++(parseStatus->lineNumber); 
+        {
+            ++(parseStatus->lineNumber);
             parseStatus->lineStart = parsePoint + 1;
         }
         c = *(++parsePoint);
@@ -45,16 +45,16 @@ void GetNextToken(parsing_status *parseStatus)
             c = *(++parsePoint);
         }
         if (c == '\n')
-        { 
-            ++(parseStatus->lineNumber); 
+        {
+            ++(parseStatus->lineNumber);
             parseStatus->lineStart = parsePoint + 1;
         }
         c = *(++parsePoint);
     }
-    else if (c == '\n') 
-    { 
-        t->kind = TOKEN_NEW_LINE; 
-        ++parsePoint; 
+    else if (c == '\n')
+    {
+        t->kind = TOKEN_NEW_LINE;
+        ++parsePoint;
         parseStatus->lineStart = parsePoint;
         ++(parseStatus->lineNumber);
     }
@@ -191,8 +191,8 @@ int ParseTextureCoordinates(parsing_status *parseStatus)
 
     // (OPTIONAL) coordinate
     GetNextToken(parseStatus);
-    if (t->kind == TOKEN_NEW_LINE) 
-    { 
+    if (t->kind == TOKEN_NEW_LINE)
+    {
         parsingBuffers->texCoords[parsingBuffers->texCoordCount].z = 0.0;
         goto tex_coord_success;
     }
@@ -267,7 +267,7 @@ int ParseFaceStmt(parsing_status *parseStatus, obj_model *model, int vertexIndex
         {
             int texCoordIndex = t->int_value - 1;
             model->vertices[vertexIndex].textureCoord = parsingBuffers->texCoords[texCoordIndex];
-            
+
             // We see if we also get normals
             GetNextToken(parseStatus);
             if (t->kind == TOKEN_SLASH)
@@ -342,7 +342,7 @@ face_error:
 int ParseObj(char *filename, obj_model *model)
 {
     FILE *objFile = fopen(filename, "r");
-    if (objFile == 0) 
+    if (objFile == 0)
     {
         fprintf(stderr, "Model %s not found in file %s line %d\n", filename, __FILE__, __LINE__ - 3);
         return 0;

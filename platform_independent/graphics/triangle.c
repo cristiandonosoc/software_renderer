@@ -89,9 +89,9 @@ void DrawTriangle(vec2i vertices[3], graphics_buffer *buffer, int color)
 {
     int *pixel = (int *)buffer->data;
     box2i boundingBox = GetTriangleBoundingBox2i(vertices, buffer);
-    for (int y = boundingBox.minY; y <= boundingBox.maxY; ++y)
+    for (int y = boundingBox.min.y; y <= boundingBox.max.y; ++y)
     {
-        for (int x = boundingBox.minX; x <= boundingBox.maxX; ++x)
+        for (int x = boundingBox.min.x; x <= boundingBox.max.x; ++x)
         {
             vec3i xVec = { vertices[1].x - vertices[0].x,
                            vertices[2].x - vertices[0].x,
@@ -148,9 +148,9 @@ void DrawTriangleFromFace(face f, graphics_buffer *buffer, int color)
     float *zBuffer = (float *)buffer->zBuffer;
     int *pixel = (int *)buffer->data;
     box2i boundingBox = GetTriangleBoundingBox2i(vertices, buffer);
-    for (int y = boundingBox.minY; y <= boundingBox.maxY; ++y)
+    for (int y = boundingBox.min.y; y <= boundingBox.max.y; ++y)
     {
-        for (int x = boundingBox.minX; x <= boundingBox.maxX; ++x)
+        for (int x = boundingBox.min.x; x <= boundingBox.max.x; ++x)
         {
             vec3i xVec = { vertices[1].x - vertices[0].x,
                            vertices[2].x - vertices[0].x,
@@ -193,9 +193,9 @@ void DrawTriangleFromFaceWithTexture(face f, graphics_buffer *buffer, texture *t
 
     int *pixel = (int *)buffer->data;
     box2i boundingBox = GetTriangleBoundingBox2i(vertices, buffer);
-    for (int y = boundingBox.minY; y <= boundingBox.maxY; ++y)
+    for (int y = boundingBox.min.y; y <= boundingBox.max.y; ++y)
     {
-        for (int x = boundingBox.minX; x <= boundingBox.maxX; ++x)
+        for (int x = boundingBox.min.x; x <= boundingBox.max.x; ++x)
         {
             vec3d baricentric = ObtainBaricentricCoordenate(x, y, vertices);
             if ((baricentric.x < 0) || (baricentric.x > 1) ||
@@ -206,8 +206,8 @@ void DrawTriangleFromFaceWithTexture(face f, graphics_buffer *buffer, texture *t
             }
 
             // We check the z buffer
-            float z = InterpolateBaricentric(baricentric, f.v1->position.z, 
-                                                          f.v2->position.z, 
+            float z = InterpolateBaricentric(baricentric, f.v1->position.z,
+                                                          f.v2->position.z,
                                                           f.v3->position.z);
             if (!UpdateZBuffer(x, y, z, buffer)) { continue; }
 
