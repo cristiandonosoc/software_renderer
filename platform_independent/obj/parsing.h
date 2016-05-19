@@ -1,13 +1,13 @@
 #ifndef PI_OBJ_PARSING_H
 #define PI_OBJ_PARSING_H
 
-#include "..\vectors.h"
+#include "../vectors.h"
 
 // For now we allocate a shitload of vertex
 #define MAX_VERTEX 5000
 #define MAX_FACES 5000
 
-typedef enum _token_kind 
+typedef enum _token_kind
 {
     TOKEN_VERTEX,
     TOKEN_TEXTURE_COORD,

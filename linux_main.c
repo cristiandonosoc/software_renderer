@@ -8,9 +8,6 @@
 
 #include "main.c"
 
-
-#define MAX_TASKS 2
-
 static graphics_buffer gBuffer;
 // Buffer to which the information is flipped
 static graphics_buffer xBuffer;
@@ -18,16 +15,7 @@ static graphics_buffer xBuffer;
 void *ImageThreadFunction(void *input)
 {
     program_info *programInfo = (program_info *)input;
-    graphics_buffer *buffer = (graphics_buffer *)input;
-    switch (programInfo->task)
-    {
-        case 1:
-            DrawObj(programInfo->buffer, programInfo->modelPath);
-            break;
-        case 2:
-            Triangles(programInfo->buffer, programInfo->modelPath);
-            break;
-    }
+    SelectTask(programInfo);
     return 0;
 }
 
@@ -59,6 +47,7 @@ int main(int argc, char *argv[])
     gBuffer.width = winWidth;
     gBuffer.height = winHeight;
     gBuffer.data = malloc(winWidth * winHeight * bytesPerPixel);
+    gBuffer.zBuffer = malloc(winWidth * winHeight * bytesPerPixel);
 
     xBuffer.width = winWidth;
     xBuffer.height = winHeight;
