@@ -7,6 +7,8 @@
 
 #include <stdlib.h>
 
+#define DELAY 0
+
 /**
  * Task 1: 2D rendering of a model
  */
@@ -28,7 +30,7 @@ void DrawObj(graphics_buffer *buffer, char *modelPath)
         DrawVertices(f.v2, f.v3, buffer);
         DrawVertices(f.v3, f.v1, buffer);
 
-        usleep(10 * 1000);
+        usleep(DELAY * 1000);
     }
 
     FreeObj(&model);
@@ -68,11 +70,9 @@ void Triangles(graphics_buffer *buffer, char *modelPath)
             vec2i vertices[3] = { GetVec2iFromVertex3d(f.v1, buffer),
                                   GetVec2iFromVertex3d(f.v2, buffer),
                                   GetVec2iFromVertex3d(f.v3, buffer) };
-
-
             DrawTriangle(vertices, buffer, color);
 
-            usleep(10 * 1000);
+            usleep(DELAY * 1000);
         }
     }
 
@@ -106,7 +106,7 @@ void TrianglesWithZBuffer(graphics_buffer *buffer, char *modelPath)
                         ((int)(intensity * 0xFF));
             DrawTriangleFromFace(f, buffer, color);
 
-            usleep(10 * 1000);
+            usleep(DELAY * 1000);
         }
     }
 
@@ -155,7 +155,7 @@ void TrianglesWithTexture(graphics_buffer *buffer, char *modelPath)
         {
             DrawTriangleFromFaceWithTexture(f, buffer, &tex, intensity);
 
-            /* usleep(10 * 1000); */
+            usleep(DELAY * 1000);
         }
     }
 

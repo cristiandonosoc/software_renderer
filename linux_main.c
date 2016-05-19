@@ -44,10 +44,7 @@ int main(int argc, char *argv[])
     int bytesPerPixel = 4;
 
     // We allocate the image buffer
-    gBuffer.width = winWidth;
-    gBuffer.height = winHeight;
-    gBuffer.data = malloc(winWidth * winHeight * bytesPerPixel);
-    gBuffer.zBuffer = malloc(winWidth * winHeight * bytesPerPixel);
+    SetupGraphicsBuffer(&gBuffer, winWidth, winHeight, bytesPerPixel);
 
     xBuffer.width = winWidth;
     xBuffer.height = winHeight;

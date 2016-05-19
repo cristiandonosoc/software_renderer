@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <malloc.h>
 
 #define MAX_TASKS 4
 typedef uint8_t uint8;
@@ -83,6 +84,15 @@ void SetupGraphicsBuffer(graphics_buffer *buffer, int width, int height, int byt
     buffer->pitch = bytesPerPixel * width;
     buffer->data = malloc(width * height * bytesPerPixel);
     buffer->zBuffer = malloc(width * height * bytesPerPixel);
+
+    float *pixel = (float *)buffer->zBuffer;
+    for (int y = 0; y < buffer->height; ++y)
+    {
+        for (int x = 0; x < buffer->width; ++x)
+        {
+            pixel[buffer->width * y + x] = -100.0;
+        }
+    }
 }
 
 #endif
