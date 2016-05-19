@@ -3,6 +3,7 @@
 
 #include "../graphics.h"
 #include "../vectors.c"
+#include "../macros.h"
 
 void ClearBuffer(graphics_buffer *buffer, int color)
 {
@@ -46,6 +47,11 @@ vec3d ObtainBaricentricCoordenate(int x, int y, vec2i vertices[3])
                    vertices[2].y - vertices[0].y,
                                y - vertices[0].y };
     vec3i cross = CrossProducti(xVec, yVec);
+    if (ABS(cross.z) < 1.0) 
+    { 
+        vec3d a = { -1, 1, 1 }; 
+        return a;
+    }
     vec3d baricentric = { -1.0,
                           (double)cross.x / -(double)cross.z,
                           (double)cross.y / -(double)cross.z };

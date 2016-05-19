@@ -155,7 +155,7 @@ void TrianglesWithTexture(graphics_buffer *buffer, char *modelPath)
         {
             DrawTriangleFromFaceWithTexture(f, buffer, &tex, intensity);
 
-            usleep(10 * 1000);
+            /* usleep(10 * 1000); */
         }
     }
 
