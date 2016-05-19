@@ -5,6 +5,8 @@
 #include "platform_independent/graphics.h"
 #include "platform_independent/utilities.c"
 
+#include "main.c"
+
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 typedef struct _window_dimension
