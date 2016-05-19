@@ -150,7 +150,7 @@ void TrianglesWithTexture(graphics_buffer *buffer, char *modelPath)
                                     Vec3dSubstract(f.v2->position, f.v1->position));
         NormalizeInPlace(&cross);
 
-        double intensity = DotProductd(cross, lightDir);
+        float intensity = DotProductd(cross, lightDir);
         if (intensity > 0.0)
         {
             DrawTriangleFromFaceWithTexture(f, buffer, &tex, intensity);

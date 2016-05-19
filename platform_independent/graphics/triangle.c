@@ -188,7 +188,7 @@ void DrawTriangleFromFace(face f, graphics_buffer *buffer, int color)
     }
 }
 
-void DrawTriangleFromFaceWithTexture(face f, graphics_buffer *buffer, texture *tex, int intensity)
+void DrawTriangleFromFaceWithTexture(face f, graphics_buffer *buffer, texture *tex, float intensity)
 {
     vec2i vertices[3] = { GetVec2iFromVertex3d(f.v1, buffer),
                           GetVec2iFromVertex3d(f.v2, buffer),
@@ -230,6 +230,10 @@ void DrawTriangleFromFaceWithTexture(face f, graphics_buffer *buffer, texture *t
             int *texPixel = (int *)tex->data;
             // Format is ABGR
             int color = ObtainARGBFromABGR(texPixel[tex->width * texY + texX]);
+            color = 0xFF000000 |
+                    ((int)(((color >> 16) & 0x000000FF) * intensity) << 16) |
+                    ((int)(((color >>  8) & 0x000000FF) * intensity) <<  8) |
+                    ((int)(((color >>  0) & 0x000000FF) * intensity) <<  0);
 
             pixel[buffer->width * y + x] = color;
         }
