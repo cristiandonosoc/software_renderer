@@ -7,12 +7,12 @@
 
 #include <stdlib.h>
 
-#define DELAY 0
+#define DELAY 10
 
 /**
  * Task 1: 2D rendering of a model
  */
-void DrawObj(graphics_buffer *buffer, char *modelPath)
+void DrawObj(graphics_buffer *buffer, char *modelPath, draw_control *drawControl)
 {
     obj_model model;
     if(!LoadObj(modelPath, &model))
@@ -20,15 +20,24 @@ void DrawObj(graphics_buffer *buffer, char *modelPath)
         return;
     }
 
-    // We draw the model
-    for (int i = 0; i < model.faceCount; ++i)
+    int index = 0;
+    while (1)
     {
-        // We draw the vertices
-        face f = model.faces[i];
+        if (drawControl->drawNext)
+        {
+            drawControl->drawNext = 0;
 
-        DrawVertices(f.v1, f.v2, buffer);
-        DrawVertices(f.v2, f.v3, buffer);
-        DrawVertices(f.v3, f.v1, buffer);
+            if (index >= model.faceCount) { continue; }
+
+            // We draw the vertices
+            face f = model.faces[index];
+
+            DrawVertices(f.v1, f.v2, buffer);
+            DrawVertices(f.v2, f.v3, buffer);
+            DrawVertices(f.v3, f.v1, buffer);
+
+            ++index;
+        }
 
         usleep(DELAY * 1000);
     }
@@ -169,7 +178,7 @@ void SelectTask(program_info *programInfo)
     switch (programInfo->task)
     {
         case 1:
-            DrawObj(programInfo->buffer, programInfo->modelPath);
+            DrawObj(programInfo->buffer, programInfo->modelPath, &programInfo->drawControl);
             break;
         case 2:
             Triangles(programInfo->buffer, programInfo->modelPath);

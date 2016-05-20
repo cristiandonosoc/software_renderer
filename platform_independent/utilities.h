@@ -3,6 +3,12 @@
 
 #include "graphics.h"
 
+typedef struct _draw_control
+{
+    int drawPrev;
+    int drawNext;
+} draw_control;
+
 typedef struct _program_info
 {
     graphics_buffer *buffer;
@@ -10,6 +16,7 @@ typedef struct _program_info
     char *modelPath;
     int winWidth;
     int winHeight;
+    draw_control drawControl;
 } program_info;
 
 #endif

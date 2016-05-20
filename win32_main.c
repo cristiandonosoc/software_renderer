@@ -123,9 +123,30 @@ int main(int argc, char *argv[])
                     // We only take care of key events
                     if (keyWasDown != keyIsDown)
                     {
-                        if (keyCode == VK_ESCAPE)
+                        switch (keyCode)
                         {
-                            gLoopRunning = 0;
+                            case VK_ESCAPE: { gLoopRunning = 0; }
+                            case VK_LEFT:
+                            {
+                                if (!keyIsDown)
+                                {
+                                    fprintf(stdout, "PREV\n");
+                                    if (!programInfo.drawControl.drawNext)
+                                    {
+                                        programInfo.drawControl.drawPrev = 1;
+                                    }
+                                }
+                                break;
+                            }
+                            case VK_RIGHT:
+                            {
+                                if (!keyIsDown)
+                                {
+                                    programInfo.drawControl.drawNext = 1;
+                                    fprintf(stdout, "NEXT\n");
+                                }
+                                break;
+                            }
                         }
                     }
                 }
