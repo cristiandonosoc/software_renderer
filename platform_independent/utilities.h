@@ -17,6 +17,7 @@ typedef struct _program_info
     int winWidth;
     int winHeight;
     draw_control drawControl;
+    int running;
 } program_info;
 
 #endif

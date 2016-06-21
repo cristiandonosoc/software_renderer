@@ -14,7 +14,6 @@
 #include <stdint.h>
 #include <malloc.h>
 
-#define MAX_TASKS 4
 typedef uint8_t uint8;
 typedef uint16_t uint16;
 typedef uint32_t uint32;
@@ -64,15 +63,18 @@ wrong_size:
         }
     }
 
-    if ((result.task <= 0) || (result.task > MAX_TASKS) ||
-        (strcmp(result.modelPath, "") == 0))
-    {
-        fprintf(stdout, "Usage is: renderer -m <model_path> -t <task_number> -s <widthxheight>\n");
-        fprintf(stdout, "Tasks are:\n1. Draw Obj Model 2D\n2. Triangles\n");
-        exit(EXIT_FAILURE);
-    }
-
     return result;
+}
+
+void PrintTasks(FILE *stream)
+{
+    fprintf(stream, "Usage is: renderer -m <model_path> -t <task_number> -s <widthxheight> (700x700 default)\n"); 
+    fprintf(stream, "Tasks are:\n");
+    fprintf(stream, "1. Draw Wireframe model without projection\n");
+    fprintf(stream, "2. Draw model with fill triangle without projection\n");
+    fprintf(stream, "3. Draw model with z-buffer without projection\n");
+    fprintf(stream, "4. Draw model with z-buffer, texture mapping, without projection\n");
+    fprintf(stream, "5. Draw model with z-buffer, texture mapping, with projection\n");
 }
 
 void SetupGraphicsBuffer(graphics_buffer *buffer, int width, int height, int bytesPerPixel)

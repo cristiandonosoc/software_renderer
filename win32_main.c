@@ -26,7 +26,8 @@ window_dimension GetWindowDimensions(HWND handle)
 
 BITMAPINFO bitmapInfo;
 static graphics_buffer gBuffer;
-static int gLoopRunning = 1;
+
+static program_info gProgramInfo;
 
 DWORD WINAPI ImageThreadFunction(LPVOID input)
 {
@@ -37,8 +38,8 @@ DWORD WINAPI ImageThreadFunction(LPVOID input)
 
 int main(int argc, char *argv[])
 {
-    program_info programInfo = GetProgramInfoFromArgs(argc, argv);
-    programInfo.buffer = &gBuffer;
+    gProgramInfo = GetProgramInfoFromArgs(argc, argv);
+    gProgramInfo.buffer = &gBuffer;
 
     static TCHAR szAppName [] = TEXT("BitBlt") ;
 
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
     handle = CreateWindowEx(0,szAppName, TEXT ("BitBlt Demo"), 
                           WS_SYSMENU,
                           CW_USEDEFAULT, CW_USEDEFAULT,         // x, y position
-                          programInfo.winWidth, programInfo.winHeight,                  // width, height
+                          gProgramInfo.winWidth, gProgramInfo.winHeight,                  // width, height
                           NULL, NULL, hInstance, NULL) ;
 
     window_dimension dim = GetWindowDimensions(handle);
@@ -94,12 +95,12 @@ int main(int argc, char *argv[])
     HANDLE imageThreadHandle = CreateThread(0,                      // No security measures
                                             0,                      // default stack size
                                             ImageThreadFunction,    // function to be called
-                                            &programInfo,           // pointer to the data
+                                            &gProgramInfo,           // pointer to the data
                                             0,                      // 
                                             &threadId);             // thread id
     
-    gLoopRunning = 1;
-    while (gLoopRunning)
+    gProgramInfo.running = 1;
+    while (gProgramInfo.running)
     {
         MSG message;
         while(PeekMessageA(&message, 0, 0, 0, PM_REMOVE))
@@ -125,15 +126,15 @@ int main(int argc, char *argv[])
                     {
                         switch (keyCode)
                         {
-                            case VK_ESCAPE: { gLoopRunning = 0; }
+                            case VK_ESCAPE: { gProgramInfo.running = 0; }
                             case VK_LEFT:
                             {
                                 if (!keyIsDown)
                                 {
                                     fprintf(stdout, "PREV\n");
-                                    if (!programInfo.drawControl.drawNext)
+                                    if (!gProgramInfo.drawControl.drawNext)
                                     {
-                                        programInfo.drawControl.drawPrev = 1;
+                                        gProgramInfo.drawControl.drawPrev = 1;
                                     }
                                 }
                                 break;
@@ -142,7 +143,7 @@ int main(int argc, char *argv[])
                             {
                                 if (!keyIsDown)
                                 {
-                                    programInfo.drawControl.drawNext = 1;
+                                    gProgramInfo.drawControl.drawNext = 1;
                                     fprintf(stdout, "NEXT\n");
                                 }
                                 break;
@@ -202,7 +203,7 @@ LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam
         case WM_CLOSE:
         case WM_DESTROY:
             {
-                gLoopRunning = 0;
+                gProgramInfo.running = 0;
                 break;              // We still need the windows processing
             }
         case WM_PAINT:

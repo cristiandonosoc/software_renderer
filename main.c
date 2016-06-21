@@ -88,6 +88,9 @@ void Triangles(graphics_buffer *buffer, char *modelPath)
     FreeObj(&model);
 }
 
+/**
+ * Task 3: Drawing with Z buffer
+ */
 void TrianglesWithZBuffer(graphics_buffer *buffer, char *modelPath)
 {
     obj_model model;
@@ -122,11 +125,65 @@ void TrianglesWithZBuffer(graphics_buffer *buffer, char *modelPath)
     FreeObj(&model);
 }
 
+/**
+ * Task 4: Drawing with texture
+ */
 void TrianglesWithTexture(graphics_buffer *buffer, char *modelPath)
 {
     obj_model model;
     if (!LoadObj(modelPath, &model)) { return; }
     
+    // We load the texture
+    int length = strlen(modelPath) + 1;
+    char *texPath = (char *)malloc(length);
+    char *c = modelPath;
+    for(int i = 0; i < length; ++i)
+    {
+        texPath[i] = *c++; 
+    }
+    texPath[length - 4] = 't';
+    texPath[length - 3] = 'g';
+    texPath[length - 2] = 'a';
+
+    texture tex;
+    if (!LoadTexture(&tex, texPath))
+    {
+        FreeObj(&model);
+        return;
+    }
+
+    vec3d lightDir = { 0.0, 0.0, -1.0 };
+    NormalizeInPlace(&lightDir);
+
+    // We draw the model
+    for (int i = 0; i < model.faceCount; ++i)
+    {
+        // We draw the vertices
+        face f = model.faces[i];
+
+        vec3d cross = CrossProductd(Vec3dSubstract(f.v3->position, f.v1->position),
+                                    Vec3dSubstract(f.v2->position, f.v1->position));
+        NormalizeInPlace(&cross);
+
+        float intensity = DotProductd(cross, lightDir);
+        if (intensity > 0.0)
+        {
+            DrawTriangleFromFaceWithTexture(f, buffer, &tex, intensity);
+
+            usleep(DELAY * 1000);
+        }
+    }
+
+
+    FreeTexture(&tex);
+    FreeObj(&model);
+}
+
+void TrianglesWithProjection(graphics_buffer *buffer, char *modelPath)
+{
+    obj_model model;
+    if (!LoadObj(modelPath, &model)) { return; }
+
     // We load the texture
     int length = strlen(modelPath) + 1;
     char *texPath = (char *)malloc(length);
@@ -189,6 +246,13 @@ void SelectTask(program_info *programInfo)
         case 4:
             TrianglesWithTexture(programInfo->buffer, programInfo->modelPath);
             break;
+        case 5:
+            TrianglesWithProjection(programInfo->buffer, programInfo->modelPath);
+            break;
+        default:
+            fprintf(stderr, "Unknown task\n");
+            PrintTasks(stderr);
+            programInfo->running = 0;
     }
 }
 
